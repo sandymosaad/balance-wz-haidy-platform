@@ -1,5 +1,74 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Database Environment Strategy
+
+- Local development uses `.env` / `.env.local` with local PostgreSQL.
+- Production (Vercel) must use Vercel Environment Variables.
+- Do not commit production database URLs into `.env`.
+
+### Local Development
+
+Use local URLs in `.env`:
+
+```dotenv
+DATABASE_URL="postgresql://bwhc_user:bwhc_pass123@localhost:5434/bwhc_db?schema=public"
+DIRECT_URL="postgresql://bwhc_user:bwhc_pass123@localhost:5434/bwhc_db?schema=public"
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+NODE_ENV="development"
+ADMIN_PASSWORD="your-strong-password"
+```
+
+### Vercel Production Environment Variables
+
+Set these in Vercel Project Settings -> Environment Variables:
+
+- `DATABASE_URL`
+: Supabase Connection Pooling URL (PgBouncer, transaction mode, port `6543`) with `?sslmode=require`.
+
+Example:
+
+```dotenv
+DATABASE_URL="postgresql://postgres.<project-ref>:<password>@aws-0-<region>.pooler.supabase.com:6543/postgres?sslmode=require"
+```
+
+- `DIRECT_URL`
+: Optional direct Supabase connection URL for migrations/deploy tasks.
+
+Example:
+
+```dotenv
+DIRECT_URL="postgresql://postgres:<password>@db.<project-ref>.supabase.co:5432/postgres?sslmode=require"
+```
+
+- `NEXT_PUBLIC_APP_URL`
+: Your Vercel domain, for example:
+
+```dotenv
+NEXT_PUBLIC_APP_URL="https://<your-vercel-domain>"
+```
+
+- `ADMIN_PASSWORD`
+: Your admin login password for dashboard access.
+
+### Important for Vercel
+
+- Remove `NODE_ENV` from Vercel env vars (or ensure it is `production`).
+- Ensure no build step writes a localhost `DATABASE_URL` during deploy.
+- Redeploy after changing environment variables.
+
+### Production Migration Command
+
+Run against production database:
+
+```bash
+npx prisma migrate deploy
+```
+
+If your network cannot reach `db.<project-ref>.supabase.co:5432` (IPv6-only in some setups), use:
+
+- `DATABASE_URL` with Supabase pooler (`:6543`) for runtime.
+- A network/environment with IPv6 support for `DIRECT_URL` migration path, or run migrations from a CI/runtime that can reach it.
+
 ## Getting Started
 
 First, run the development server:
