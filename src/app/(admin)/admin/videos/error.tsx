@@ -21,17 +21,21 @@ export default function Error({
       <div>
         <Heading level={1}>Videos</Heading>
       </div>
-      <Alert type="error" title="Error Loading Videos">
-        <p className="mb-3">{error.message || 'Failed to load videos. Please try again.'}</p>
-        <div className="flex gap-3">
-          <Button onClick={() => reset()} variant="primary">
-            Try Again
-          </Button>
-          <Button onClick={() => window.location.href = '/admin'} variant="secondary">
-            Back to Dashboard
-          </Button>
-        </div>
-      </Alert>
+
+      <Alert
+        type="error"
+        title="Error Loading Videos"
+        message={error.message || 'Failed to load videos. Please try again.'}
+      />
+
+      <div className="flex gap-3">
+        <Button onClick={() => reset()} variant="primary">
+          Try Again
+        </Button>
+        <Button onClick={() => (window.location.href = '/admin')} variant="secondary">
+          Back to Dashboard
+        </Button>
+      </div>
     </section>
   );
 }
