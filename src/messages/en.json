@@ -1,0 +1,160 @@
+{
+  "common": {
+    "footer": "Designed for calm growth, emotional clarity, and sustainable transformation.",
+    "bookSession": "Book a Session"
+  },
+  "navigation": {
+    "home": "Home",
+    "about": "About",
+    "services": "Services",
+    "videos": "Videos",
+    "contact": "Contact"
+  },
+  "footer": {
+    "brandTitle": "Art Therapy Studio",
+    "tagline": "Art Therapy Practitioner | Coaching | Wellness | Personal Growth | Creative Expression",
+    "description": "A warm space for reflective healing and meaningful growth.",
+    "quickLinks": "Quick Links",
+    "contact": "Contact",
+    "contactForm": "Open Contact Form",
+    "social": "Connect",
+    "links": {
+      "home": "Home",
+      "videos": "Videos",
+      "about": "About",
+      "services": "Services",
+      "contact": "Contact"
+    },
+    "copyright": "© 2026 Art Therapy Studio. All rights reserved.",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service"
+  },
+  "phase3": {
+    "home": {
+      "hero": {
+        "tagline": "Art Therapy Practitioner | Coaching | Wellness | Personal Growth | Creative Expression",
+        "title": "Transform Your Life Through Creative Expression and Personal Growth",
+        "subtitle": "Warm, practical, and compassionate support for your personal healing path.",
+        "exploreVideos": "Explore Videos",
+        "bookSession": "Book a Session"
+      },
+      "aboutPreview": {
+        "title": "Welcome",
+        "description": "I guide clients through art therapy and coaching journeys rooted in emotional clarity and mindful action.",
+        "cta": "Learn More"
+      },
+      "services": {
+        "title": "Services",
+        "learnMore": "Learn More",
+        "coaching": {
+          "title": "1:1 Coaching Sessions",
+          "description": "Personalized sessions for confidence, goals, and life transitions."
+        },
+        "artTherapy": {
+          "title": "Art Therapy Sessions",
+          "description": "Creative practices to process emotions with structure and care."
+        },
+        "wellness": {
+          "title": "Wellness Programs",
+          "description": "Calm routines for resilience, balance, and long-term growth."
+        }
+      },
+      "featuredVideos": {
+        "title": "Featured Content",
+        "subtitle": "Explore educational videos from social channels",
+        "cta": "See All Videos"
+      },
+      "finalCta": {
+        "title": "Ready to begin your healing journey?",
+        "description": "Take the first step with a gentle and structured approach.",
+        "button": "Start Your Journey"
+      }
+    },
+    "videos": {
+      "title": "Video Library",
+      "subtitle": "Educational content from social media platforms",
+      "searchPlaceholder": "Search videos by title or topic"
+    },
+    "playlist": {
+      "videosCount": "videos",
+      "videoList": "Playlist Videos",
+      "videoNumber": "Video {number}",
+      "durationUnknown": "Duration unavailable",
+      "watch": "Watch"
+    },
+    "videoDetail": {
+      "breadcrumb": {
+        "home": "Home",
+        "videos": "Videos"
+      },
+      "backToPlaylist": "Back to Playlist",
+      "nextVideo": "Next Video"
+    },
+    "aboutPage": {
+      "title": "About Me",
+      "subtitle": "A journey of healing, creativity, and practical transformation.",
+      "journey": {
+        "title": "My Journey",
+        "description": "My practice combines evidence-based coaching methods with expressive art therapy to support grounded and meaningful change."
+      },
+      "credentials": {
+        "title": "Qualifications",
+        "items": {
+          "1": "Diploma in Art Therapy Practice",
+          "2": "Professional Coaching Certification",
+          "3": "Specialization in Wellness and Behavioral Change"
+        }
+      },
+      "cta": {
+        "title": "Ready to start your journey?",
+        "button": "Book a Session"
+      }
+    },
+    "servicesPage": {
+      "title": "Services",
+      "subtitle": "Choose the path that supports your current season of growth.",
+      "book": "Book Session",
+      "coaching": {
+        "title": "1:1 Coaching Sessions",
+        "description": "Tailored support for life direction, purpose, and confidence.",
+        "point1": "Goal-focused weekly sessions",
+        "point2": "Personal growth planning",
+        "point3": "Accountability and reflection"
+      },
+      "artTherapy": {
+        "title": "Art Therapy Sessions",
+        "description": "Structured expressive practice to process emotions safely.",
+        "point1": "Guided expressive exercises",
+        "point2": "Emotion processing frameworks",
+        "point3": "Take-home reflective prompts"
+      },
+      "wellness": {
+        "title": "Wellness Programs",
+        "description": "Practical routines for emotional regulation and balance.",
+        "point1": "Mindfulness and grounding tools",
+        "point2": "Habit and routine design",
+        "point3": "Monthly progress check-ins"
+      }
+    },
+    "contactPage": {
+      "title": "Get in Touch",
+      "subtitle": "Send a message and begin your next chapter with support.",
+      "successTitle": "Message sent",
+      "successMessage": "Thank you. We will get back to you soon.",
+      "errorTitle": "Submission error",
+      "errorMessage": "Please check your details and try again.",
+      "form": {
+        "name": "Name",
+        "email": "Email",
+        "subject": "Subject",
+        "message": "Message",
+        "submit": "Send Message"
+      },
+      "subjects": {
+        "discovery": "Discovery Session",
+        "coaching": "Coaching",
+        "artTherapy": "Art Therapy"
+      }
+    }
+  }
+}

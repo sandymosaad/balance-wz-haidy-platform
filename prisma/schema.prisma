@@ -1,0 +1,136 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearchPostgres"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Platform {
+  YOUTUBE
+  INSTAGRAM
+  TIKTOK
+}
+
+enum ContentType {
+  SERIES
+  COURSE
+  PLAYLIST
+}
+
+enum UserRole {
+  ADMIN
+  USER
+}
+
+model Playlist {
+  id          String      @id @default(uuid()) @db.Uuid
+  title       String      @db.VarChar(100)
+  slug        String      @unique @db.VarChar(140)
+  description String?
+  coverImage  String?     @map("cover_image")
+  contentType ContentType @default(PLAYLIST) @map("content_type")
+  order       Int         @default(0) @map("order")
+  isPublished Boolean     @default(false) @map("is_published")
+  videos      Video[]
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+
+  @@index([title])
+  @@index([isPublished])
+  @@index([createdAt])
+  @@map("playlists")
+}
+
+model Video {
+  id           String    @id @default(uuid()) @db.Uuid
+  title        String    @db.VarChar(200)
+  slug         String    @unique @db.VarChar(240)
+  description  String?
+  videoUrl     String    @map("video_url")
+  platform     Platform
+  videoId      String    @map("video_id") @db.VarChar(140)
+  thumbnailUrl String?   @map("thumbnail_url")
+  duration     Int?
+  playlistId   String    @map("playlist_id") @db.Uuid
+  playlist     Playlist  @relation(fields: [playlistId], references: [id], onDelete: Cascade)
+  viewingHistory ViewingHistory[]
+  favorites      Favorite[]
+  comments       Comment[]
+  orderIndex   Int       @default(0) @map("order_index")
+  tags         String[]
+  viewCount    Int       @default(0) @map("view_count")
+  isPublished  Boolean   @default(false) @map("is_published")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  @@index([title])
+  @@index([platform])
+  @@index([playlistId])
+  @@index([isPublished])
+  @@index([videoId])
+  @@index([tags], type: Gin)
+  @@unique([playlistId, orderIndex])
+  @@map("videos")
+}
+
+model User {
+  id             String           @id @default(uuid()) @db.Uuid
+  name           String?          @db.VarChar(120)
+  email          String           @unique @db.VarChar(255)
+  role           UserRole         @default(USER)
+  isActive       Boolean          @default(true) @map("is_active")
+  viewingHistory ViewingHistory[]
+  favorites      Favorite[]
+  comments       Comment[]
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime         @updatedAt @map("updated_at")
+
+  @@index([email])
+  @@map("users")
+}
+
+model ViewingHistory {
+  id           String   @id @default(uuid()) @db.Uuid
+  userId       String   @map("user_id") @db.Uuid
+  videoId      String   @map("video_id") @db.Uuid
+  watchedAt    DateTime @default(now()) @map("watched_at")
+  progress     Int      @default(0)
+  watchSeconds Int      @default(0) @map("watch_seconds")
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  video        Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, videoId])
+  @@index([watchedAt])
+  @@map("viewing_history")
+}
+
+model Favorite {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  videoId   String   @map("video_id") @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  video     Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([userId, videoId])
+  @@map("favorites")
+}
+
+model Comment {
+  id         String   @id @default(uuid()) @db.Uuid
+  body       String
+  isApproved Boolean  @default(false) @map("is_approved")
+  userId     String   @map("user_id") @db.Uuid
+  videoId    String   @map("video_id") @db.Uuid
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  video      Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@index([isApproved])
+  @@index([createdAt])
+  @@map("comments")
+}
