@@ -3,6 +3,11 @@
     "footer": "Designed for calm growth, emotional clarity, and sustainable transformation.",
     "bookSession": "Book a Session"
   },
+  "brand": {
+    "name": "balance wz haidy",
+    "tagline": "Art Therapy Practitioner | Coaching | Wellness | Personal Growth | Creative Expression",
+    "homeAria": "balance wz haidy home"
+  },
   "navigation": {
     "home": "Home",
     "about": "About",
@@ -11,7 +16,7 @@
     "contact": "Contact"
   },
   "footer": {
-    "brandTitle": "Art Therapy Studio",
+    "brandTitle": "balance wz haidy",
     "tagline": "Art Therapy Practitioner | Coaching | Wellness | Personal Growth | Creative Expression",
     "description": "A warm space for reflective healing and meaningful growth.",
     "quickLinks": "Quick Links",
@@ -25,7 +30,19 @@
       "services": "Services",
       "contact": "Contact"
     },
-    "copyright": "© 2026 Art Therapy Studio. All rights reserved.",
+    "copyright": "© 2026 balance wz haidy. All rights reserved.",
+    "socialLabels": {
+      "facebook": "Facebook",
+      "instagram": "Instagram",
+      "tiktok": "TikTok",
+      "youtube": "YouTube"
+    },
+    "socialAria": {
+      "facebook": "Open Facebook in a new tab",
+      "instagram": "Open Instagram in a new tab",
+      "tiktok": "Open TikTok in a new tab",
+      "youtube": "Open YouTube in a new tab"
+    },
     "privacy": "Privacy Policy",
     "terms": "Terms of Service"
   },

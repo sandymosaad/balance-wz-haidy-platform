@@ -3,7 +3,7 @@ import {Container} from '@/components/ui/Container';
 import {Heading} from '@/components/ui/Heading';
 import {Text} from '@/components/ui/Text';
 import {Link} from '@/i18n/navigation';
-import {SOCIAL_LINKS} from '@/lib/constants';
+import {SOCIAL_LINKS, type SocialKey} from '@/lib/social-links';
 import {getTranslations} from 'next-intl/server';
 
 type FooterProps = {
@@ -53,14 +53,16 @@ const socialIcons = {
 
 export async function Footer({locale}: FooterProps) {
   const t = await getTranslations({locale, namespace: 'footer'});
+  const tBrand = await getTranslations({locale, namespace: 'brand'});
+  const socialKeys = Object.keys(SOCIAL_LINKS) as SocialKey[];
 
   return (
     <footer className="border-t border-art-sage bg-art-beige/70 py-14">
       <Container>
         <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
           <div className="space-y-3">
-            <Heading level={4}>{t('brandTitle')}</Heading>
-            <Text>{t('tagline')}</Text>
+            <Heading level={4}>{tBrand('name')}</Heading>
+            <Text>{tBrand('tagline')}</Text>
             <Text variant="small" color="muted">{t('description')}</Text>
           </div>
 
@@ -85,19 +87,19 @@ export async function Footer({locale}: FooterProps) {
           <div className="space-y-3">
             <Heading level={4}>{t('social')}</Heading>
             <div className="flex flex-col gap-2 sm:grid sm:grid-cols-2">
-              {SOCIAL_LINKS.map((social) => {
-                const Icon = socialIcons[social.key];
+              {socialKeys.map((socialKey) => {
+                const Icon = socialIcons[socialKey];
                 return (
                   <a
-                    key={social.key}
-                    href={social.href}
+                    key={socialKey}
+                    href={SOCIAL_LINKS[socialKey]}
                     target="_blank"
                     rel="noopener noreferrer"
-                    aria-label={`${social.label} (opens in a new tab)`}
+                    aria-label={t(`socialAria.${socialKey}`)}
                     className="inline-flex items-center gap-2 rounded-full border border-art-sage px-3 py-2 text-sm text-art-taupe transition-all duration-calm hover:border-art-gold hover:text-art-terracotta"
                   >
                     <Icon className="h-4 w-4" />
-                    <span>{social.label}</span>
+                    <span>{t(`socialLabels.${socialKey}`)}</span>
                   </a>
                 );
               })}

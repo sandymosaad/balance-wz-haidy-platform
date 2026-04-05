@@ -1,7 +1,8 @@
 import type {Metadata} from 'next';
+import {SOCIAL_LINKS} from '@/lib/social-links';
 
 export const siteConfig = {
-  name: 'Art Therapy Studio',
+  name: 'balance wz haidy',
   description: 'Transform your life through creative expression and personal growth with art therapy coaching.',
   url: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
   ogImage: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/og-image.jpg`,
@@ -15,7 +16,7 @@ export const siteConfig = {
     'mental health'
   ],
   authors: {
-    name: 'Art Therapy Studio',
+    name: 'balance wz haidy',
     url: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
   },
   contact: {
@@ -23,10 +24,10 @@ export const siteConfig = {
     phone: '+966 500 000 000'
   },
   social: {
-    facebook: 'https://facebook.com/arttherapystudio',
-    instagram: 'https://instagram.com/arttherapystudio',
-    tiktok: 'https://tiktok.com/@arttherapystudio',
-    youtube: 'https://youtube.com/@arttherapystudio'
+    facebook: SOCIAL_LINKS.facebook,
+    instagram: SOCIAL_LINKS.instagram,
+    tiktok: SOCIAL_LINKS.tiktok,
+    youtube: SOCIAL_LINKS.youtube
   }
 };
 
@@ -54,7 +55,7 @@ export function generateBaseMetadata(): Metadata {
       title: siteConfig.name,
       description: siteConfig.description,
       images: [siteConfig.ogImage],
-      creator: '@arttherapystudio'
+      creator: '@balance_wz_haidy'
     },
     robots: {
       index: true,
