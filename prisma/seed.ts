@@ -1,4 +1,4 @@
-import {PrismaClient, ContentType, Platform} from '@prisma/client';
+import {PrismaClient, ContentType, VideoPlatform} from '@prisma/client';
 import {extractVideoMetadata} from '../src/lib/video-platform';
 
 const prisma = new PrismaClient();
@@ -16,7 +16,7 @@ type SeedVideo = {
   title: string;
   description: string;
   url: string;
-  platform: Platform;
+  platform: VideoPlatform;
   tags: string[];
 };
 
@@ -46,15 +46,22 @@ async function createPlaylistWithVideos(options: {
         title: video.title,
         slug: slugify(`${options.title}-${video.title}`),
         description: video.description,
-        videoUrl: video.url,
-        platform: video.platform,
-        videoId: metadata.videoId,
         thumbnailUrl: metadata.thumbnailUrl,
         playlistId: playlist.id,
         orderIndex: index,
         tags: video.tags,
         isPublished: true,
-        viewCount: Math.floor(Math.random() * 2000)
+        viewCount: Math.floor(Math.random() * 2000),
+        sources: {
+          create: [
+            {
+              platform: video.platform,
+              url: video.url,
+              externalId: metadata.externalId,
+              isPrimary: true
+            }
+          ]
+        }
       }
     });
   }

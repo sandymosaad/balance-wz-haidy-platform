@@ -1,74 +1,146 @@
-import type {Platform} from '@prisma/client';
+import type {VideoPlatform} from '@prisma/client';
 
-export type VideoMetadata = {
-  platform: Platform;
-  videoId: string;
-  thumbnailUrl: string;
+export type VideoSourceMetadata = {
+  platform: VideoPlatform;
+  externalId: string | null;
+  thumbnailUrl: string | null;
 };
+
+const SUPPORTED_PLATFORM_MESSAGE = 'Supported: YouTube, Instagram, TikTok, Facebook.';
 
 const YOUTUBE_REGEXES = [
   /(?:youtube\.com\/watch\?v=)([\w-]{6,})/i,
   /(?:youtu\.be\/)([\w-]{6,})/i,
-  /(?:youtube\.com\/shorts\/)([\w-]{6,})/i
+  /(?:youtube\.com\/shorts\/)([\w-]{6,})/i,
+  /(?:youtube\.com\/embed\/)([\w-]{6,})/i
 ];
 
-const INSTAGRAM_REGEX = /instagram\.com\/(?:reel|p)\/([\w-]+)/i;
-const TIKTOK_REGEX = /tiktok\.com\/(?:@[^/]+\/video\/|v\/)(\d+)/i;
+const INSTAGRAM_REGEXES = [
+  /instagram\.com\/(?:reel|p|tv)\/([\w-]+)/i,
+  /instagram\.com\/stories\/[^/]+\/(\d+)/i
+];
 
-export function detectPlatform(url: string): Platform {
-  const normalized = url.toLowerCase();
+const TIKTOK_REGEXES = [
+  /tiktok\.com\/@[^/]+\/video\/(\d+)/i,
+  /tiktok\.com\/v\/(\d+)/i,
+  /tiktok\.com\/t\/([^/?#]+)/i
+];
 
-  if (normalized.includes('youtube.com') || normalized.includes('youtu.be')) {
+const FACEBOOK_REGEXES = [
+  /facebook\.com\/watch\/?\?v=(\d+)/i,
+  /facebook\.com\/video\.php\?v=(\d+)/i,
+  /facebook\.com\/(?:reel|reels)\/(\d+)/i,
+  /facebook\.com\/[^/]+\/videos\/(\d+)/i,
+  /fb\.watch\/([^/?#]+)/i
+];
+
+function parseUrl(url: string): URL {
+  const parsed = new URL(url);
+  if (!['http:', 'https:'].includes(parsed.protocol)) {
+    throw new Error(`Invalid URL protocol. ${SUPPORTED_PLATFORM_MESSAGE}`);
+  }
+  return parsed;
+}
+
+function normalizeHost(hostname: string) {
+  return hostname.replace(/^www\./i, '').replace(/^m\./i, '').toLowerCase();
+}
+
+export function detectPlatform(url: string): VideoPlatform {
+  const parsed = parseUrl(url);
+  const host = normalizeHost(parsed.hostname);
+
+  if (host === 'fb.watch' || host.endsWith('facebook.com')) {
+    return 'FACEBOOK';
+  }
+
+  if (host === 'youtu.be' || host.includes('youtube.com')) {
     return 'YOUTUBE';
   }
-  if (normalized.includes('instagram.com')) {
+
+  if (host.endsWith('instagram.com')) {
     return 'INSTAGRAM';
   }
-  if (normalized.includes('tiktok.com')) {
+
+  if (host.endsWith('tiktok.com')) {
     return 'TIKTOK';
   }
 
-  throw new Error('Unsupported video platform. Supported: YouTube, Instagram, TikTok.');
+  throw new Error(`Unsupported video platform. ${SUPPORTED_PLATFORM_MESSAGE}`);
 }
 
-export function extractVideoId(url: string, platform: Platform): string {
-  if (platform === 'YOUTUBE') {
-    for (const regex of YOUTUBE_REGEXES) {
-      const match = url.match(regex);
-      if (match?.[1]) return match[1];
+function matchFirst(regexes: RegExp[], value: string) {
+  for (const regex of regexes) {
+    const match = value.match(regex);
+    if (match?.[1]) {
+      return match[1];
     }
+  }
+  return null;
+}
+
+export function extractExternalId(url: string, platform: VideoPlatform): string | null {
+  const parsed = parseUrl(url);
+
+  if (platform === 'YOUTUBE') {
+    return matchFirst(YOUTUBE_REGEXES, parsed.toString());
   }
 
   if (platform === 'INSTAGRAM') {
-    const match = url.match(INSTAGRAM_REGEX);
-    if (match?.[1]) return match[1];
+    return matchFirst(INSTAGRAM_REGEXES, parsed.toString());
   }
 
   if (platform === 'TIKTOK') {
-    const match = url.match(TIKTOK_REGEX);
-    if (match?.[1]) return match[1];
+    return matchFirst(TIKTOK_REGEXES, parsed.toString());
   }
 
-  throw new Error('Could not extract video identifier from URL.');
+  if (platform === 'FACEBOOK') {
+    return (
+      parsed.searchParams.get('v') ??
+      parsed.searchParams.get('video_id') ??
+      parsed.searchParams.get('story_fbid') ??
+      matchFirst(FACEBOOK_REGEXES, parsed.toString())
+    );
+  }
+
+  return null;
 }
 
-export function getThumbnailUrl(platform: Platform, videoId: string): string {
-  if (platform === 'YOUTUBE') {
-    return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+export function getThumbnailUrl(platform: VideoPlatform, externalId: string | null): string | null {
+  if (platform === 'YOUTUBE' && externalId) {
+    return `https://img.youtube.com/vi/${externalId}/hqdefault.jpg`;
   }
 
-  if (platform === 'INSTAGRAM') {
-    // Placeholder strategy for public metadata-limited platforms.
-    return `https://www.instagram.com/p/${videoId}/media/?size=l`;
+  return null;
+}
+
+export function getPlatformLabel(platform: VideoPlatform): string {
+  switch (platform) {
+    case 'YOUTUBE':
+      return 'YouTube';
+    case 'INSTAGRAM':
+      return 'Instagram';
+    case 'TIKTOK':
+      return 'TikTok';
+    case 'FACEBOOK':
+      return 'Facebook';
+  }
+}
+
+export function isEmbeddablePlatform(platform: VideoPlatform): boolean {
+  return platform === 'YOUTUBE';
+}
+
+export function getEmbedUrl(platform: VideoPlatform, externalId: string | null): string | null {
+  if (platform !== 'YOUTUBE' || !externalId) {
+    return null;
   }
 
-  return `https://placehold.co/1280x720/E8DCC8/5A5047?text=TikTok+Video+${videoId}`;
+  return `https://www.youtube.com/embed/${externalId}`;
 }
 
 export function isValidVideoUrl(url: string): boolean {
   try {
-    const parsed = new URL(url);
-    if (!['https:', 'http:'].includes(parsed.protocol)) return false;
     detectPlatform(url);
     return true;
   } catch {
@@ -76,14 +148,14 @@ export function isValidVideoUrl(url: string): boolean {
   }
 }
 
-export async function extractVideoMetadata(url: string): Promise<VideoMetadata> {
+export async function extractVideoMetadata(url: string): Promise<VideoSourceMetadata> {
   const platform = detectPlatform(url);
-  const videoId = extractVideoId(url, platform);
-  const thumbnailUrl = getThumbnailUrl(platform, videoId);
+  const externalId = extractExternalId(url, platform);
+  const thumbnailUrl = getThumbnailUrl(platform, externalId);
 
   return {
     platform,
-    videoId,
+    externalId,
     thumbnailUrl
   };
 }

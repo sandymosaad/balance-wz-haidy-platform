@@ -2,7 +2,6 @@
 
 import {VideoSortOrderSchema, VideoCreateSchema, VideoUpdateSchema, type VideoFilterInput} from '@/lib/validation';
 import {errorResponse, mapToApiError, successResponse} from '@/lib/api-response';
-import {extractVideoMetadata} from '@/lib/video-platform';
 import {requireAdminOrRedirect} from '@/server/actions/admin.actions';
 import {videoRepository} from '@/server/repositories/video.repository';
 
@@ -20,13 +19,7 @@ export async function createVideoAction(data: unknown) {
   await requireAdminOrRedirect();
   try {
     const parsed = VideoCreateSchema.parse(data);
-    const enriched = await extractVideoMetadata(parsed.video_url);
-    const created = await videoRepository.createVideo({
-      ...parsed,
-      platform: parsed.platform ?? enriched.platform,
-      video_id: parsed.video_id ?? enriched.videoId,
-      thumbnail_url: parsed.thumbnail_url ?? enriched.thumbnailUrl
-    });
+    const created = await videoRepository.createVideo(parsed);
     return successResponse(created);
   } catch (error) {
     return mapToApiError(error);

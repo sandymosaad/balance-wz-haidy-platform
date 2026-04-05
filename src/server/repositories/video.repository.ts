@@ -1,8 +1,8 @@
-import type {Prisma} from '@prisma/client';
+import type {Prisma, VideoPlatform} from '@prisma/client';
 import {db} from '@/lib/db';
 import {ServerActionError} from '@/lib/api-response';
-import {extractVideoMetadata} from '@/lib/video-platform';
-import type {VideoCreateInput, VideoFilterInput, VideoUpdateInput} from '@/lib/validation';
+import {detectPlatform, extractExternalId, getThumbnailUrl} from '@/lib/video-platform';
+import type {VideoCreateInput, VideoFilterInput, VideoUpdateInput, VideoSourceInput} from '@/lib/validation';
 
 function getVideoSort(sort: VideoFilterInput['sort']): Prisma.VideoOrderByWithRelationInput[] {
   switch (sort) {
@@ -27,6 +27,63 @@ function slugify(value: string): string {
     .replace(/-+/g, '-');
 }
 
+type NormalizedSource = {
+  platform: VideoPlatform;
+  url: string;
+  externalId: string | null;
+  isPrimary: boolean;
+};
+
+function normalizeSources(sources: VideoSourceInput[]): NormalizedSource[] {
+  return sources.map((source) => {
+    const platform = source.platform ?? detectPlatform(source.url);
+    return {
+      platform,
+      url: source.url,
+      externalId: extractExternalId(source.url, platform),
+      isPrimary: Boolean(source.isPrimary)
+    };
+  });
+}
+
+function ensureSinglePrimary(sources: NormalizedSource[]): NormalizedSource[] {
+  if (!sources.length) {
+    return sources;
+  }
+
+  const primaryIndex = sources.findIndex((source) => source.isPrimary);
+  const effectivePrimaryIndex = primaryIndex >= 0 ? primaryIndex : 0;
+
+  return sources.map((source, index) => ({
+    ...source,
+    isPrimary: index === effectivePrimaryIndex
+  }));
+}
+
+function resolveThumbnailUrl(sources: NormalizedSource[], providedThumbnailUrl?: string | null) {
+  if (providedThumbnailUrl) {
+    return providedThumbnailUrl;
+  }
+
+  for (const source of sources) {
+    const thumbnail = getThumbnailUrl(source.platform, source.externalId);
+    if (thumbnail) {
+      return thumbnail;
+    }
+  }
+
+  return null;
+}
+
+function createVideoSourceData(sources: NormalizedSource[]) {
+  return sources.map((source) => ({
+    platform: source.platform,
+    url: source.url,
+    externalId: source.externalId,
+    isPrimary: source.isPrimary
+  }));
+}
+
 export class VideoRepository {
   async getAllVideos(filters?: VideoFilterInput) {
     const page = filters?.page ?? 1;
@@ -36,7 +93,7 @@ export class VideoRepository {
     const where: Prisma.VideoWhereInput = {
       isPublished: filters?.is_published ?? true,
       ...(filters?.playlist_id ? {playlistId: filters.playlist_id} : {}),
-      ...(filters?.platform ? {platform: filters.platform} : {}),
+      ...(filters?.platform ? {sources: {some: {platform: filters.platform}}} : {}),
       ...(filters?.tags?.length ? {tags: {hasEvery: filters.tags}} : {}),
       ...(filters?.search
         ? {
@@ -61,6 +118,9 @@ export class VideoRepository {
               title: true,
               slug: true
             }
+          },
+          sources: {
+            orderBy: [{isPrimary: 'desc'}, {createdAt: 'asc'}]
           }
         }
       }),
@@ -82,7 +142,10 @@ export class VideoRepository {
     return db.video.findUnique({
       where: {id},
       include: {
-        playlist: true
+        playlist: true,
+        sources: {
+          orderBy: [{isPrimary: 'desc'}, {createdAt: 'asc'}]
+        }
       }
     });
   }
@@ -91,7 +154,10 @@ export class VideoRepository {
     return db.video.findUnique({
       where: {slug},
       include: {
-        playlist: true
+        playlist: true,
+        sources: {
+          orderBy: [{isPrimary: 'desc'}, {createdAt: 'asc'}]
+        }
       }
     });
   }
@@ -102,7 +168,19 @@ export class VideoRepository {
         playlistId,
         isPublished: true
       },
-      orderBy: {orderIndex: 'asc'}
+      orderBy: {orderIndex: 'asc'},
+      include: {
+        playlist: {
+          select: {
+            id: true,
+            title: true,
+            slug: true
+          }
+        },
+        sources: {
+          orderBy: [{isPrimary: 'desc'}, {createdAt: 'asc'}]
+        }
+      }
     });
   }
 
@@ -121,27 +199,30 @@ export class VideoRepository {
     const playlist = await db.playlist.findUnique({where: {id: data.playlist_id}});
     if (!playlist) throw new ServerActionError('Playlist does not exist.', 'PLAYLIST_NOT_FOUND');
 
-    const metadata = await extractVideoMetadata(data.video_url);
-    const finalVideoId = data.video_id ?? metadata.videoId;
     const slug = data.slug ? slugify(data.slug) : slugify(data.title);
+    const sources = ensureSinglePrimary(normalizeSources(data.sources));
+    const thumbnailUrl = resolveThumbnailUrl(sources, data.thumbnail_url);
 
     return db.video.create({
       data: {
         title: data.title,
         slug,
         description: data.description,
-        videoUrl: data.video_url,
-        platform: data.platform ?? metadata.platform,
-        videoId: finalVideoId,
-        thumbnailUrl: data.thumbnail_url ?? metadata.thumbnailUrl,
+        thumbnailUrl,
         duration: data.duration,
         playlistId: data.playlist_id,
         tags: data.tags,
         orderIndex: data.order_index ?? 0,
-        isPublished: data.is_published ?? false
+        isPublished: data.is_published ?? false,
+        sources: {
+          create: createVideoSourceData(sources)
+        }
       },
       include: {
-        playlist: true
+        playlist: true,
+        sources: {
+          orderBy: [{isPrimary: 'desc'}, {createdAt: 'asc'}]
+        }
       }
     });
   }
@@ -150,42 +231,51 @@ export class VideoRepository {
     const current = await db.video.findUnique({where: {id}});
     if (!current) throw new ServerActionError('Video not found.', 'NOT_FOUND');
 
-    let metadata:
-      | {
-          platform: Prisma.EnumPlatformFieldUpdateOperationsInput['set'];
-          videoId: string;
-          thumbnailUrl: string;
+    const sources = data.sources ? ensureSinglePrimary(normalizeSources(data.sources)) : null;
+    const thumbnailUrl = sources ? resolveThumbnailUrl(sources, data.thumbnail_url) : data.thumbnail_url ?? current.thumbnailUrl;
+
+    return db.$transaction(async (tx) => {
+      const updated = await tx.video.update({
+        where: {id},
+        data: {
+          title: data.title,
+          slug: data.slug ? slugify(data.slug) : undefined,
+          description: data.description,
+          thumbnailUrl,
+          duration: data.duration,
+          playlistId: data.playlist_id,
+          tags: data.tags,
+          orderIndex: data.order_index,
+          isPublished: data.is_published
+        },
+        include: {
+          playlist: true,
+          sources: true
         }
-      | undefined;
+      });
 
-    if (data.video_url) {
-      const extracted = await extractVideoMetadata(data.video_url);
-      metadata = {
-        platform: extracted.platform,
-        videoId: extracted.videoId,
-        thumbnailUrl: extracted.thumbnailUrl
-      };
-    }
-
-    return db.video.update({
-      where: {id},
-      data: {
-        title: data.title,
-        slug: data.slug ? slugify(data.slug) : undefined,
-        description: data.description,
-        videoUrl: data.video_url,
-        platform: data.platform ?? metadata?.platform,
-        videoId: data.video_id ?? metadata?.videoId,
-        thumbnailUrl: data.thumbnail_url ?? metadata?.thumbnailUrl,
-        duration: data.duration,
-        playlistId: data.playlist_id,
-        tags: data.tags,
-        orderIndex: data.order_index,
-        isPublished: data.is_published
-      },
-      include: {
-        playlist: true
+      if (sources) {
+        await tx.videoSource.deleteMany({where: {videoId: id}});
+        await tx.videoSource.createMany({
+          data: createVideoSourceData(sources).map((source) => ({
+            videoId: id,
+            platform: source.platform,
+            url: source.url,
+            externalId: source.externalId,
+            isPrimary: source.isPrimary
+          }))
+        });
       }
+
+      return tx.video.findUnique({
+        where: {id},
+        include: {
+          playlist: true,
+          sources: {
+            orderBy: [{isPrimary: 'desc'}, {createdAt: 'asc'}]
+          }
+        }
+      }) ?? updated;
     });
   }
 

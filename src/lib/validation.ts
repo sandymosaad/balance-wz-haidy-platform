@@ -1,4 +1,5 @@
 import {z} from 'zod';
+import {detectPlatform} from '@/lib/video-platform';
 
 const EN = {
   required: 'This field is required.',
@@ -23,8 +24,35 @@ export function getValidationMessages(locale: ValidationLocale = 'en') {
 export const SortOrderSchema = z.enum(['NEWEST', 'OLDEST', 'ALPHABETICAL']);
 export const VideoSortOrderSchema = z.enum(['NEWEST', 'OLDEST', 'ALPHABETICAL', 'TRENDING']);
 
-export const PlatformSchema = z.enum(['YOUTUBE', 'INSTAGRAM', 'TIKTOK']);
+export const VideoPlatformSchema = z.enum(['YOUTUBE', 'INSTAGRAM', 'TIKTOK', 'FACEBOOK']);
+export const PlatformSchema = VideoPlatformSchema;
 export const ContentTypeSchema = z.enum(['SERIES', 'COURSE', 'PLAYLIST']);
+
+export const VideoSourceSchema = z
+  .object({
+    url: z.string().trim().url(EN.invalidUrl),
+    platform: VideoPlatformSchema.optional(),
+    isPrimary: z.boolean().optional()
+  })
+  .superRefine((source, ctx) => {
+    try {
+      const detected = detectPlatform(source.url);
+
+      if (source.platform && source.platform !== detected) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['platform'],
+          message: `Selected platform does not match the URL. Supported: YouTube, Instagram, TikTok, Facebook.`
+        });
+      }
+    } catch (error) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['url'],
+        message: error instanceof Error ? error.message : `Unsupported video platform. ${EN.invalidUrl}`
+      });
+    }
+  });
 
 export const PlaylistCreateSchema = z.object({
   title: z.string().trim().min(3, 'Title must be at least 3 characters.').max(100),
@@ -46,26 +74,72 @@ export const PlaylistFilterSchema = z.object({
   is_published: z.boolean().optional()
 });
 
-export const VideoCreateSchema = z.object({
+const VideoBaseSchema = z.object({
   title: z.string().trim().min(3).max(200),
   slug: z.string().trim().min(3).max(240).optional(),
   description: z.string().trim().max(2000).optional(),
-  video_url: z.string().url(EN.invalidUrl),
-  platform: PlatformSchema.optional(),
-  video_id: z.string().trim().min(2).max(140).optional(),
   thumbnail_url: z.string().url(EN.invalidUrl).optional(),
   duration: z.number().int().min(0).optional(),
   playlist_id: z.string().uuid(EN.invalidUuid),
   tags: z.array(z.string().trim().min(1).max(40)).default([]),
   order_index: z.number().int().min(0).optional(),
-  is_published: z.boolean().optional()
+  is_published: z.boolean().optional(),
+  sources: z.array(VideoSourceSchema)
 });
 
-export const VideoUpdateSchema = VideoCreateSchema.partial();
+function validateVideoSources(data: {sources?: Array<z.infer<typeof VideoSourceSchema>>}, ctx: z.RefinementCtx) {
+  if (!data.sources?.length) {
+    return;
+  }
+
+  const seenPlatforms = new Map<string, number>();
+  let primaryCount = 0;
+
+  data.sources.forEach((source, index) => {
+    try {
+      const platform = source.platform ?? detectPlatform(source.url);
+      const existingIndex = seenPlatforms.get(platform);
+
+      if (typeof existingIndex === 'number') {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['sources', index, 'platform'],
+          message: 'Duplicate platform links are not allowed.'
+        });
+      } else {
+        seenPlatforms.set(platform, index);
+      }
+
+      if (source.isPrimary) {
+        primaryCount += 1;
+      }
+    } catch {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['sources', index, 'url'],
+        message: 'Unsupported video platform. Supported: YouTube, Instagram, TikTok, Facebook.'
+      });
+    }
+  });
+
+  if (primaryCount > 1) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['sources'],
+      message: 'Only one primary platform can be selected.'
+    });
+  }
+}
+
+export const VideoCreateSchema = VideoBaseSchema.extend({
+  sources: z.array(VideoSourceSchema).min(1, 'Add at least one platform link.')
+}).superRefine(validateVideoSources);
+
+export const VideoUpdateSchema = VideoBaseSchema.partial().superRefine(validateVideoSources);
 
 export const VideoFilterSchema = z.object({
   playlist_id: z.string().uuid(EN.invalidUuid).optional(),
-  platform: PlatformSchema.optional(),
+  platform: VideoPlatformSchema.optional(),
   tags: z.array(z.string().trim()).optional(),
   search: z.string().trim().optional(),
   sort: VideoSortOrderSchema.default('NEWEST'),
@@ -80,6 +154,7 @@ export type PlaylistFilterInput = z.infer<typeof PlaylistFilterSchema>;
 export type VideoCreateInput = z.infer<typeof VideoCreateSchema>;
 export type VideoUpdateInput = z.infer<typeof VideoUpdateSchema>;
 export type VideoFilterInput = z.infer<typeof VideoFilterSchema>;
+export type VideoSourceInput = z.infer<typeof VideoSourceSchema>;
 
 export function validateInput<T>(schema: z.ZodType<T>, payload: unknown): T {
   return schema.parse(payload);

@@ -9,10 +9,11 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-enum Platform {
+enum VideoPlatform {
   YOUTUBE
   INSTAGRAM
   TIKTOK
+  FACEBOOK
 }
 
 enum ContentType {
@@ -46,35 +47,48 @@ model Playlist {
 }
 
 model Video {
-  id           String    @id @default(uuid()) @db.Uuid
-  title        String    @db.VarChar(200)
-  slug         String    @unique @db.VarChar(240)
-  description  String?
-  videoUrl     String    @map("video_url")
-  platform     Platform
-  videoId      String    @map("video_id") @db.VarChar(140)
-  thumbnailUrl String?   @map("thumbnail_url")
-  duration     Int?
-  playlistId   String    @map("playlist_id") @db.Uuid
-  playlist     Playlist  @relation(fields: [playlistId], references: [id], onDelete: Cascade)
+  id             String         @id @default(uuid()) @db.Uuid
+  title          String         @db.VarChar(200)
+  slug           String         @unique @db.VarChar(240)
+  description    String?
+  thumbnailUrl   String?        @map("thumbnail_url")
+  duration       Int?
+  playlistId     String         @map("playlist_id") @db.Uuid
+  playlist       Playlist       @relation(fields: [playlistId], references: [id], onDelete: Cascade)
+  sources        VideoSource[]
   viewingHistory ViewingHistory[]
   favorites      Favorite[]
   comments       Comment[]
-  orderIndex   Int       @default(0) @map("order_index")
-  tags         String[]
-  viewCount    Int       @default(0) @map("view_count")
-  isPublished  Boolean   @default(false) @map("is_published")
-  createdAt    DateTime  @default(now()) @map("created_at")
-  updatedAt    DateTime  @updatedAt @map("updated_at")
+  orderIndex     Int            @default(0) @map("order_index")
+  tags           String[]
+  viewCount      Int            @default(0) @map("view_count")
+  isPublished    Boolean        @default(false) @map("is_published")
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
 
   @@index([title])
-  @@index([platform])
   @@index([playlistId])
   @@index([isPublished])
-  @@index([videoId])
   @@index([tags], type: Gin)
   @@unique([playlistId, orderIndex])
   @@map("videos")
+}
+
+model VideoSource {
+  id         String       @id @default(uuid()) @db.Uuid
+  videoId    String       @map("video_id") @db.Uuid
+  video      Video        @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  platform   VideoPlatform
+  url        String
+  externalId String?      @map("external_id") @db.VarChar(140)
+  isPrimary  Boolean      @default(false) @map("is_primary")
+  createdAt  DateTime     @default(now()) @map("created_at")
+  updatedAt  DateTime     @updatedAt @map("updated_at")
+
+  @@index([videoId])
+  @@index([platform])
+  @@unique([videoId, platform])
+  @@map("video_sources")
 }
 
 model User {

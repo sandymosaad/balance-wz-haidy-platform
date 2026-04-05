@@ -1,13 +1,14 @@
 'use client';
 
-import {useMemo, useState, useTransition} from 'react';
+import {useState, useTransition} from 'react';
 import {z} from 'zod';
 import {Input} from '@/components/ui/Input';
 import {Textarea} from '@/components/ui/Textarea';
 import {Select} from '@/components/ui/Select';
 import {Button} from '@/components/ui/Button';
 import {Alert} from '@/components/ui/Alert';
-import {extractVideoId, detectPlatform, getThumbnailUrl} from '@/lib/video-platform';
+import {VideoCreateSchema, type VideoCreateInput} from '@/lib/validation';
+import {createSourceDraft, MultiSourceInput, type SourceRowError, type SourceDraft} from '@/features/videos/components/MultiSourceInput';
 
 type PlaylistOption = {
   id: string;
@@ -17,86 +18,152 @@ type PlaylistOption = {
 type VideoInitialData = {
   title?: string;
   description?: string | null;
-  video_url?: string;
   playlist_id?: string;
   tags?: string[];
   order_index?: number;
   is_published?: boolean;
+  sources?: Array<{
+    url: string;
+    isPrimary?: boolean;
+  }>;
 };
 
 type AddVideoFormProps = {
   playlists: PlaylistOption[];
   initialData?: VideoInitialData;
-  submitAction: (payload: {
-    title: string;
-    description?: string;
-    video_url: string;
-    playlist_id: string;
-    tags: string[];
-    order_index?: number;
-    is_published: boolean;
-  }) => Promise<{success: boolean; error?: {message: string}} | void>;
+  submitAction: (payload: VideoCreateInput) => Promise<{success: boolean; error?: {message: string}} | void>;
 };
 
-const schema = z.object({
-  title: z.string().min(3).max(200),
-  video_url: z.string().url(),
-  playlist_id: z.string().min(1),
-  description: z.string().max(2000).optional(),
-  tags: z.string().optional(),
-  order_index: z.coerce.number().int().min(0).optional(),
-  is_published: z.boolean().default(false)
-});
+type FormState = {
+  title: string;
+  playlist_id: string;
+  description: string;
+  tags: string;
+  order_index: string;
+  is_published: boolean;
+};
+
+function createInitialSources(initialData?: VideoInitialData): SourceDraft[] {
+  if (!initialData?.sources?.length) {
+    return [createSourceDraft(true)];
+  }
+
+  const sources = initialData.sources.map((source, index) => ({
+    id: `${index}-${source.url}`,
+    url: source.url,
+    isPrimary: Boolean(source.isPrimary)
+  }));
+
+  if (!sources.some((source) => source.isPrimary)) {
+    const firstSource = sources[0]!;
+    sources[0] = {
+      id: firstSource.id,
+      url: firstSource.url,
+      isPrimary: true
+    };
+  }
+
+  return sources;
+}
+
+function mapSourceIssues(issues: z.ZodIssue[], sourceCount: number) {
+  const rowErrors: SourceRowError[] = Array.from({length: sourceCount}, () => ({}));
+  let message: string | null = null;
+
+  for (const issue of issues) {
+    const [root, index, field] = issue.path;
+
+    if (root === 'sources' && typeof index === 'number') {
+      const current = rowErrors[index] ?? {};
+      if (field === 'url') {
+        current.url = issue.message;
+      } else if (field === 'platform') {
+        current.platform = issue.message;
+      } else {
+        current.general = issue.message;
+      }
+      rowErrors[index] = current;
+      continue;
+    }
+
+    message = issue.message;
+  }
+
+  return {rowErrors, message};
+}
 
 export function AddVideoForm({playlists, initialData, submitAction}: AddVideoFormProps) {
   const [isPending, startTransition] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
   const [isError, setIsError] = useState(false);
-  const [form, setForm] = useState({
+  const [sourceErrors, setSourceErrors] = useState<SourceRowError[]>([]);
+  const [form, setForm] = useState<FormState>({
     title: initialData?.title ?? '',
-    video_url: initialData?.video_url ?? '',
     playlist_id: initialData?.playlist_id ?? '',
     description: initialData?.description ?? '',
     tags: initialData?.tags?.join(', ') ?? '',
     order_index: initialData?.order_index?.toString() ?? '',
     is_published: Boolean(initialData?.is_published)
   });
+  const [sources, setSources] = useState<SourceDraft[]>(createInitialSources(initialData));
 
-  const preview = useMemo(() => {
-    if (!form.video_url) return null;
-    try {
-      const platform = detectPlatform(form.video_url);
-      const videoId = extractVideoId(form.video_url, platform);
-      return {
-        platform,
-        videoId,
-        thumbnail: getThumbnailUrl(platform, videoId)
-      };
-    } catch {
-      return null;
-    }
-  }, [form.video_url]);
+  function handleFieldChange<K extends keyof FormState>(key: K, value: FormState[K]) {
+    setForm((current) => ({...current, [key]: value}));
+    setMessage(null);
+  }
+
+  function handleSourcesChange(nextSources: SourceDraft[]) {
+    setSources(nextSources);
+    setMessage(null);
+  }
+
+  function resetForm() {
+    setForm({
+      title: '',
+      playlist_id: '',
+      description: '',
+      tags: '',
+      order_index: '',
+      is_published: false
+    });
+    setSources([createSourceDraft(true)]);
+  }
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setMessage(null);
+    setSourceErrors([]);
 
-    const parsed = schema.safeParse({
-      ...form,
-      order_index: form.order_index || undefined
-    });
+    const payload = {
+      title: form.title,
+      description: form.description || undefined,
+      playlist_id: form.playlist_id,
+      tags: form.tags
+        ? form.tags
+            .split(',')
+            .map((item) => item.trim())
+            .filter(Boolean)
+        : [],
+      order_index: form.order_index ? Number(form.order_index) : undefined,
+      is_published: form.is_published,
+      sources: sources.map((source) => ({
+        url: source.url,
+        isPrimary: source.isPrimary
+      }))
+    };
+
+    const parsed = VideoCreateSchema.safeParse(payload);
 
     if (!parsed.success) {
+      const mapped = mapSourceIssues(parsed.error.issues, sources.length);
+      setSourceErrors(mapped.rowErrors);
       setIsError(true);
-      setMessage('Please check the highlighted fields.');
+      setMessage(mapped.message ?? 'Please check the highlighted fields.');
       return;
     }
 
     startTransition(async () => {
-      const result = await submitAction({
-        ...parsed.data,
-        tags: parsed.data.tags ? parsed.data.tags.split(',').map((item) => item.trim()).filter(Boolean) : []
-      });
+      const result = await submitAction(parsed.data);
 
       if (result && 'success' in result && !result.success) {
         setIsError(true);
@@ -106,6 +173,10 @@ export function AddVideoForm({playlists, initialData, submitAction}: AddVideoFor
 
       setIsError(false);
       setMessage('Video saved successfully.');
+
+      if (!initialData) {
+        resetForm();
+      }
     });
   }
 
@@ -114,42 +185,40 @@ export function AddVideoForm({playlists, initialData, submitAction}: AddVideoFor
       {message ? <Alert type={isError ? 'error' : 'success'} title={isError ? 'Error' : 'Success'} message={message} /> : null}
 
       <Input
-        label="Video URL"
-        value={form.video_url}
-        onChange={(event) => setForm((prev) => ({...prev, video_url: event.target.value}))}
-        placeholder="https://www.youtube.com/watch?v=..."
-        required
-      />
-      <Input
         label="Title"
         value={form.title}
-        onChange={(event) => setForm((prev) => ({...prev, title: event.target.value}))}
+        onChange={(event) => handleFieldChange('title', event.target.value)}
         maxLength={200}
         required
       />
+
       <Textarea
         label="Description"
         value={form.description}
-        onChange={(event) => setForm((prev) => ({...prev, description: event.target.value}))}
+        onChange={(event) => handleFieldChange('description', event.target.value)}
       />
+
       <Select
         label="Playlist"
         value={form.playlist_id}
-        onChange={(value) => setForm((prev) => ({...prev, playlist_id: value}))}
+        onChange={(value) => handleFieldChange('playlist_id', value)}
         options={playlists.map((item) => ({label: item.title, value: item.id}))}
         placeholder="Select playlist"
       />
+
+      <MultiSourceInput sources={sources} errors={sourceErrors} onChange={handleSourcesChange} />
+
       <div className="grid gap-4 md:grid-cols-2">
         <Input
           label="Order"
           type="number"
           value={form.order_index}
-          onChange={(event) => setForm((prev) => ({...prev, order_index: event.target.value}))}
+          onChange={(event) => handleFieldChange('order_index', event.target.value)}
         />
         <Input
           label="Tags (comma-separated)"
           value={form.tags}
-          onChange={(event) => setForm((prev) => ({...prev, tags: event.target.value}))}
+          onChange={(event) => handleFieldChange('tags', event.target.value)}
         />
       </div>
 
@@ -157,18 +226,10 @@ export function AddVideoForm({playlists, initialData, submitAction}: AddVideoFor
         <input
           type="checkbox"
           checked={form.is_published}
-          onChange={(event) => setForm((prev) => ({...prev, is_published: event.target.checked}))}
+          onChange={(event) => handleFieldChange('is_published', event.target.checked)}
         />
         Publish immediately
       </label>
-
-      {preview ? (
-        <div className="rounded-2xl border border-art-sage bg-art-beige/50 p-4 text-sm text-art-taupe">
-          <p><strong>Platform:</strong> {preview.platform}</p>
-          <p><strong>Video ID:</strong> {preview.videoId}</p>
-          <p className="truncate"><strong>Thumbnail:</strong> {preview.thumbnail}</p>
-        </div>
-      ) : null}
 
       <div className="flex flex-wrap gap-3">
         <Button type="submit" loading={isPending}>Save Video</Button>

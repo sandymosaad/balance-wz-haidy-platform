@@ -1,13 +1,13 @@
 'use client';
 
-import type {Video} from '@prisma/client';
+import type {Video} from '@/types';
 import {Grid} from '@/components/layout/Grid';
 import {Button} from '@/components/ui/Button';
 import {Skeleton} from '@/components/ui/Skeleton';
 import {Alert} from '@/components/ui/Alert';
 import {VideoCard} from '@/features/videos/components/VideoCard';
 
-type VideoWithPlaylist = Video & {playlist?: {slug: string}};
+type VideoWithPlaylist = Video & {playlist?: {slug: string; title?: string; id?: string} | null};
 
 type VideoGridProps = {
   videos: VideoWithPlaylist[];

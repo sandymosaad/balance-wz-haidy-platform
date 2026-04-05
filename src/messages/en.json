@@ -73,7 +73,20 @@
     "videos": {
       "title": "Video Library",
       "subtitle": "Educational content from social media platforms",
-      "searchPlaceholder": "Search videos by title or topic"
+      "searchPlaceholder": "Search videos by title or topic",
+      "platforms": {
+        "youtube": "YouTube",
+        "instagram": "Instagram",
+        "tiktok": "TikTok",
+        "facebook": "Facebook"
+      },
+      "editor": {
+        "addPlatformLink": "Add platform link",
+        "primaryPlatform": "Primary platform",
+        "invalidUrl": "Please provide a valid URL.",
+        "unsupportedUrl": "Unsupported video platform. Supported: YouTube, Instagram, TikTok, Facebook.",
+        "duplicatePlatform": "Duplicate platform links are not allowed."
+      }
     },
     "playlist": {
       "videosCount": "videos",
@@ -86,6 +99,13 @@
       "breadcrumb": {
         "home": "Home",
         "videos": "Videos"
+      },
+      "selectPlatform": "Select a platform to watch",
+      "openOn": {
+        "youtube": "Open on YouTube",
+        "instagram": "Open on Instagram",
+        "tiktok": "Open on TikTok",
+        "facebook": "Open on Facebook"
       },
       "backToPlaylist": "Back to Playlist",
       "nextVideo": "Next Video"

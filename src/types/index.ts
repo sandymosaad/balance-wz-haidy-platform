@@ -1,4 +1,4 @@
-import type {ContentType, Platform, UserRole} from '@prisma/client';
+import type {ContentType, UserRole, VideoPlatform} from '@prisma/client';
 import type {ApiResponse as BaseApiResponse} from '@/lib/api-response';
 
 export type ID = string;
@@ -28,17 +28,27 @@ export interface Playlist {
   updatedAt: Date;
 }
 
+export interface VideoSource {
+  id: ID;
+  videoId: ID;
+  platform: VideoPlatform;
+  url: string;
+  externalId: string | null;
+  isPrimary: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface Video {
   id: ID;
   title: string;
   slug: string;
   description: string | null;
-  videoUrl: string;
-  platform: Platform;
-  videoId: string;
   thumbnailUrl: string | null;
   duration: number | null;
   playlistId: ID;
+  playlist?: Playlist | null;
+  sources: VideoSource[];
   orderIndex: number;
   tags: string[];
   viewCount: number;

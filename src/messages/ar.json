@@ -73,7 +73,20 @@
     "videos": {
       "title": "مكتبة الفيديو",
       "subtitle": "محتوى تعليمي من منصات التواصل الاجتماعي",
-      "searchPlaceholder": "ابحث في الفيديوهات حسب العنوان أو الموضوع"
+      "searchPlaceholder": "ابحث في الفيديوهات حسب العنوان أو الموضوع",
+      "platforms": {
+        "youtube": "يوتيوب",
+        "instagram": "إنستغرام",
+        "tiktok": "تيك توك",
+        "facebook": "فيسبوك"
+      },
+      "editor": {
+        "addPlatformLink": "إضافة رابط منصة",
+        "primaryPlatform": "المنصة الأساسية",
+        "invalidUrl": "يرجى إدخال رابط صحيح.",
+        "unsupportedUrl": "منصة فيديو غير مدعومة. المنصات المدعومة: يوتيوب، إنستغرام، تيك توك، فيسبوك.",
+        "duplicatePlatform": "روابط المنصة المكررة غير مسموحة."
+      }
     },
     "playlist": {
       "videosCount": "فيديو",
@@ -86,6 +99,13 @@
       "breadcrumb": {
         "home": "الرئيسية",
         "videos": "الفيديوهات"
+      },
+      "selectPlatform": "اختر منصة للمشاهدة",
+      "openOn": {
+        "youtube": "افتح على يوتيوب",
+        "instagram": "افتح على إنستغرام",
+        "tiktok": "افتح على تيك توك",
+        "facebook": "افتح على فيسبوك"
       },
       "backToPlaylist": "العودة إلى القائمة",
       "nextVideo": "الفيديو التالي"

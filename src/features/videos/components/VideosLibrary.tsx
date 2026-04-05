@@ -1,7 +1,9 @@
 'use client';
 
 import {useMemo, useState} from 'react';
-import type {Playlist, Video} from '@prisma/client';
+import type {Playlist} from '@prisma/client';
+import type {Video} from '@/types';
+import {useTranslations} from 'next-intl';
 import {Filter} from '@/features/videos/components/Filter';
 import {SearchBar} from '@/features/videos/components/SearchBar';
 import {SortSelector} from '@/features/videos/components/SortSelector';
@@ -26,6 +28,7 @@ function sortVideos(videos: VideoWithPlaylist[], sort: string) {
 }
 
 export function VideosLibrary({videos, playlists, dictionary}: VideosLibraryProps) {
+  const t = useTranslations('phase3.videos');
   const [query, setQuery] = useState('');
   const [sort, setSort] = useState('NEWEST');
   const [filters, setFilters] = useState<{platform?: string; tag?: string; playlist?: string}>({});
@@ -42,7 +45,7 @@ export function VideosLibrary({videos, playlists, dictionary}: VideosLibraryProp
         !query ||
         video.title.toLowerCase().includes(query.toLowerCase()) ||
         (video.description ?? '').toLowerCase().includes(query.toLowerCase());
-      const byPlatform = !filters.platform || video.platform === filters.platform;
+      const byPlatform = !filters.platform || video.sources.some((source) => source.platform === filters.platform);
       const byTag = !filters.tag || video.tags.includes(filters.tag);
       const byPlaylist = !filters.playlist || video.playlistId === filters.playlist;
       return bySearch && byPlatform && byTag && byPlaylist;
@@ -59,9 +62,10 @@ export function VideosLibrary({videos, playlists, dictionary}: VideosLibraryProp
         onFilterChange={setFilters}
         options={{
           platforms: [
-            {label: 'YouTube', value: 'YOUTUBE'},
-            {label: 'Instagram', value: 'INSTAGRAM'},
-            {label: 'TikTok', value: 'TIKTOK'}
+            {label: t('platforms.youtube'), value: 'YOUTUBE'},
+            {label: t('platforms.instagram'), value: 'INSTAGRAM'},
+            {label: t('platforms.tiktok'), value: 'TIKTOK'},
+            {label: t('platforms.facebook'), value: 'FACEBOOK'}
           ],
           tags: allTags.map((tag) => ({label: tag, value: tag})),
           playlists: playlists.map((playlist) => ({label: playlist.title, value: playlist.id}))

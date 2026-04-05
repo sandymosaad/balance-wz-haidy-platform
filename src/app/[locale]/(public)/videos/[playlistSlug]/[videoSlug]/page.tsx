@@ -1,7 +1,7 @@
 import type {Metadata} from 'next';
-import type {Video} from '@prisma/client';
 import {notFound} from 'next/navigation';
 import {getTranslations} from 'next-intl/server';
+import Image from 'next/image';
 import {Container} from '@/components/ui/Container';
 import {Section} from '@/components/layout/Section';
 import {Heading} from '@/components/ui/Heading';
@@ -12,6 +12,7 @@ import {VideoPlayer} from '@/features/videos/components/VideoPlayer';
 import {Link} from '@/i18n/navigation';
 import {getPlaylistDetails} from '@/server/actions/playlist.actions';
 import {getVideoDetails} from '@/server/actions/video.actions';
+import type {Video} from '@/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -47,7 +48,7 @@ export default async function VideoDetailPage({
 
   if (!videoResponse.success || !videoResponse.data) notFound();
 
-  const {video, nextVideo} = videoResponse.data as VideoDetailsPayload;
+  const {video, nextVideo} = videoResponse.data as unknown as VideoDetailsPayload;
   const playlistResponse = await getPlaylistDetails(params.playlistSlug);
   const playlist = playlistResponse.success ? playlistResponse.data : null;
 
@@ -59,12 +60,23 @@ export default async function VideoDetailPage({
           <Link href={`/videos/${params.playlistSlug}`}>{playlist?.title ?? params.playlistSlug}</Link>
         </div>
 
-        <VideoPlayer video={video} controls autoplay={false} />
+        <div className="overflow-hidden rounded-gentle border border-art-sage bg-art-beige shadow-card">
+          <div className="relative aspect-video">
+            <Image
+              src={video.thumbnailUrl ?? 'https://placehold.co/1280x720/E8DCC8/5A5047?text=Video'}
+              alt={video.title}
+              fill
+              className="object-cover"
+              priority
+            />
+          </div>
+        </div>
+
+        <VideoPlayer title={video.title} sources={video.sources} controls autoplay={false} />
 
         <div>
           <Heading level={1}>{video.title}</Heading>
           <div className="mb-3 flex flex-wrap gap-2">
-            <Badge>{video.platform}</Badge>
             {video.duration ? <Badge variant="secondary">{Math.floor(video.duration / 60)}m</Badge> : null}
           </div>
           <Text>{video.description ?? ''}</Text>

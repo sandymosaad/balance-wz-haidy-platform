@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import {Pencil, PlusCircle, Trash2, Eye} from 'lucide-react';
-import type {Video} from '@prisma/client';
 import {db} from '@/lib/db';
 import {Heading} from '@/components/ui/Heading';
 import {Text} from '@/components/ui/Text';
@@ -8,24 +7,39 @@ import {Button} from '@/components/ui/Button';
 import {DataTable} from '@/components/admin/DataTable';
 import {StatusBadge} from '@/components/admin/StatusBadge';
 import {formatDate} from '@/lib/admin-utils';
+import {PlatformIcon} from '@/features/videos/components/PlatformIcon';
+import type {Video} from '@/types';
+import type {VideoPlatform} from '@prisma/client';
 
-type VideoRow = Video & {
+interface VideoRow extends Record<string, unknown> {
+  id: string;
+  title: string;
+  slug: string;
+  createdAt: Date;
+  isPublished: boolean;
   playlist: {
     title: string;
     slug: string;
   } | null;
-};
+  sources: Array<{
+    id: string;
+    platform: VideoPlatform;
+  }>;
+}
 
 export default async function AdminVideosPage() {
-  const videos = await db.video.findMany({
+  const videos = (await db.video.findMany({
     take: 20,
     orderBy: {createdAt: 'desc'},
     include: {
       playlist: {
         select: {title: true, slug: true}
+      },
+      sources: {
+        orderBy: [{isPrimary: 'desc'}, {createdAt: 'asc'}]
       }
     }
-  });
+  } as never)) as unknown as VideoRow[];
 
   return (
     <div className="space-y-5">
@@ -39,11 +53,21 @@ export default async function AdminVideosPage() {
         </Button>
       </div>
 
-      <DataTable
+      <DataTable<VideoRow>
         columns={[
           {key: 'title', header: 'Title', sortable: true},
           {key: 'playlist', header: 'Playlist', render: (row) => String(row.playlist?.title ?? '-')},
-          {key: 'platform', header: 'Platform'},
+          {
+            key: 'platforms',
+            header: 'Platforms',
+            render: (row) => (
+              <div className="flex flex-wrap gap-2">
+                {row.sources.map((source) => (
+                  <PlatformIcon key={source.id} platform={source.platform} label={source.platform} compact />
+                ))}
+              </div>
+            )
+          },
           {
             key: 'status',
             header: 'Status',
@@ -66,7 +90,7 @@ export default async function AdminVideosPage() {
             )
           }
         ]}
-        data={videos as VideoRow[]}
+        data={videos}
       />
     </div>
   );
