@@ -92,6 +92,8 @@
       "videosCount": "videos",
       "videoList": "Playlist Videos",
       "videoNumber": "Video {number}",
+      "coverAlt": "Cover image for playlist {title}",
+      "coverPlaceholderAria": "Placeholder cover for playlist {title}",
       "durationUnknown": "Duration unavailable",
       "watch": "Watch"
     },

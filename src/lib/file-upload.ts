@@ -13,8 +13,24 @@ export function validateFile(file: File): {ok: boolean; error?: string} {
 }
 
 export async function uploadFileToServer(file: File): Promise<string> {
-  // MVP: store as object URL for preview-like behavior.
-  return Promise.resolve(URL.createObjectURL(file));
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const response = await fetch('/api/uploads/image', {
+    method: 'POST',
+    body: formData
+  });
+
+  if (!response.ok) {
+    throw new Error('Image upload failed.');
+  }
+
+  const payload = (await response.json()) as {url?: string};
+  if (!payload.url) {
+    throw new Error('Image upload did not return a URL.');
+  }
+
+  return payload.url;
 }
 
 export async function generateThumbnail(imageFile: File): Promise<Blob> {

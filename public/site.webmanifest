@@ -1,0 +1,16 @@
+{
+  "name": "Art Therapy Studio",
+  "short_name": "ArtTherapy",
+  "description": "Art therapy and life coaching platform.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F5EEDD",
+  "theme_color": "#C97D60",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    }
+  ]
+}

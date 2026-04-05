@@ -1,5 +1,6 @@
 import {z} from 'zod';
 import {detectPlatform} from '@/lib/video-platform';
+import {isRenderableImageSrc} from '@/lib/images';
 
 const EN = {
   required: 'This field is required.',
@@ -27,6 +28,11 @@ export const VideoSortOrderSchema = z.enum(['NEWEST', 'OLDEST', 'ALPHABETICAL', 
 export const VideoPlatformSchema = z.enum(['YOUTUBE', 'INSTAGRAM', 'TIKTOK', 'FACEBOOK']);
 export const PlatformSchema = VideoPlatformSchema;
 export const ContentTypeSchema = z.enum(['SERIES', 'COURSE', 'PLAYLIST']);
+
+const ImageUrlSchema = z
+  .string()
+  .trim()
+  .refine((value) => isRenderableImageSrc(value), EN.invalidUrl);
 
 export const VideoSourceSchema = z
   .object({
@@ -58,7 +64,7 @@ export const PlaylistCreateSchema = z.object({
   title: z.string().trim().min(3, 'Title must be at least 3 characters.').max(100),
   slug: z.string().trim().min(3).max(140).optional(),
   description: z.string().trim().max(1000).optional(),
-  cover_image: z.string().url(EN.invalidUrl).optional(),
+  cover_image: ImageUrlSchema.optional(),
   content_type: ContentTypeSchema.default('PLAYLIST'),
   order: z.number().int().min(0).optional(),
   is_published: z.boolean().optional()

@@ -7,7 +7,7 @@ import {Skeleton} from '@/components/ui/Skeleton';
 import {Alert} from '@/components/ui/Alert';
 import {VideoCard} from '@/features/videos/components/VideoCard';
 
-type VideoWithPlaylist = Video & {playlist?: {slug: string; title?: string; id?: string} | null};
+type VideoWithPlaylist = Video & {playlist?: {slug: string; title?: string; id?: string; coverImage?: string | null} | null};
 
 type VideoGridProps = {
   videos: VideoWithPlaylist[];

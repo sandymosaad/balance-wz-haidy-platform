@@ -4,21 +4,23 @@ import {useRef, useState} from 'react';
 import {Upload} from 'lucide-react';
 import {Button} from '@/components/ui/Button';
 import {UploadPreview} from '@/components/admin/UploadPreview';
-import {validateFile} from '@/lib/file-upload';
+import {uploadFileToServer, validateFile} from '@/lib/file-upload';
 
 type FileUploadProps = {
   label: string;
   onFileSelected: (file?: File, preview?: string) => void;
+  onUploadStateChange?: (uploading: boolean) => void;
   accept?: string;
 };
 
-export function FileUpload({label, onFileSelected, accept = 'image/jpeg,image/png'}: FileUploadProps) {
+export function FileUpload({label, onFileSelected, onUploadStateChange, accept = 'image/jpeg,image/png,image/webp'}: FileUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [preview, setPreview] = useState<string | undefined>();
   const [file, setFile] = useState<File | undefined>();
+  const [uploading, setUploading] = useState(false);
 
-  function onPick(selected?: File) {
+  async function onPick(selected?: File) {
     if (!selected) return;
     const validation = validateFile(selected);
     if (!validation.ok) {
@@ -30,7 +32,19 @@ export function FileUpload({label, onFileSelected, accept = 'image/jpeg,image/pn
     setError(null);
     setFile(selected);
     setPreview(objectUrl);
-    onFileSelected(selected, objectUrl);
+
+    try {
+      setUploading(true);
+      onUploadStateChange?.(true);
+      const persistedUrl = await uploadFileToServer(selected);
+      onFileSelected(selected, persistedUrl);
+    } catch (uploadError) {
+      setError(uploadError instanceof Error ? uploadError.message : 'Image upload failed.');
+      onFileSelected(selected, undefined);
+    } finally {
+      setUploading(false);
+      onUploadStateChange?.(false);
+    }
   }
 
   function removeFile() {
@@ -53,8 +67,14 @@ export function FileUpload({label, onFileSelected, accept = 'image/jpeg,image/pn
           className="hidden"
           onChange={(event) => onPick(event.target.files?.[0])}
         />
-        <Button type="button" variant="outline" className="mt-3" onClick={() => inputRef.current?.click()}>
-          Choose File
+        <Button
+          type="button"
+          variant="outline"
+          className="mt-3"
+          onClick={() => inputRef.current?.click()}
+          disabled={uploading}
+        >
+          {uploading ? 'Uploading...' : 'Choose File'}
         </Button>
       </div>
       {error ? <p className="text-xs text-red-600">{error}</p> : null}

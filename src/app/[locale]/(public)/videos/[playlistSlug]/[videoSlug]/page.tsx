@@ -10,6 +10,7 @@ import {Badge} from '@/components/ui/Badge';
 import {Button} from '@/components/ui/Button';
 import {VideoPlayer} from '@/features/videos/components/VideoPlayer';
 import {Link} from '@/i18n/navigation';
+import {normalizeImageSrc} from '@/lib/images';
 import {getPlaylistDetails} from '@/server/actions/playlist.actions';
 import {getVideoDetails} from '@/server/actions/video.actions';
 import type {Video} from '@/types';
@@ -51,6 +52,11 @@ export default async function VideoDetailPage({
   const {video, nextVideo} = videoResponse.data as unknown as VideoDetailsPayload;
   const playlistResponse = await getPlaylistDetails(params.playlistSlug);
   const playlist = playlistResponse.success ? playlistResponse.data : null;
+  const playlistCoverSrc = normalizeImageSrc(
+    (playlist as {coverImage?: string | null; cover_image?: string | null} | null)?.coverImage ??
+      (playlist as {coverImage?: string | null; cover_image?: string | null} | null)?.cover_image,
+    '/images/playlist-placeholder.svg'
+  );
 
   return (
     <Section>
@@ -60,11 +66,12 @@ export default async function VideoDetailPage({
           <Link href={`/videos/${params.playlistSlug}`}>{playlist?.title ?? params.playlistSlug}</Link>
         </div>
 
+   
         <div className="overflow-hidden rounded-gentle border border-art-sage bg-art-beige shadow-card">
           <div className="relative aspect-video">
             <Image
-              src={video.thumbnailUrl ?? 'https://placehold.co/1280x720/E8DCC8/5A5047?text=Video'}
-              alt={video.title}
+              src={playlistCoverSrc}
+              alt={playlist?.title ?? video.title}
               fill
               className="object-cover"
               priority

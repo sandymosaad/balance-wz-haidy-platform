@@ -22,6 +22,16 @@ export default async function VideosPage({params}: {params: {locale: string}}) {
 
   const videos = videosResponse.success ? videosResponse.data?.items ?? [] : [];
   const playlists = playlistsResponse.success ? playlistsResponse.data?.items ?? [] : [];
+  const coverByPlaylistId = new Map(playlists.map((playlist) => [playlist.id, playlist.coverImage]));
+  const videosWithCovers = videos.map((video) => ({
+    ...video,
+    playlist: video.playlist
+      ? {
+          ...video.playlist,
+          coverImage: video.playlist.coverImage ?? coverByPlaylistId.get(video.playlistId) ?? null
+        }
+      : video.playlist
+  }));
 
   return (
     <Section>
@@ -32,7 +42,7 @@ export default async function VideosPage({params}: {params: {locale: string}}) {
         </div>
 
         <VideosLibrary
-          videos={videos as never[]}
+          videos={videosWithCovers as never[]}
           playlists={playlists.map((item) => ({id: item.id, title: item.title, slug: item.slug}))}
           dictionary={{searchPlaceholder: t('searchPlaceholder')}}
         />

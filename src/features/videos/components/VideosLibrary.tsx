@@ -9,7 +9,7 @@ import {SearchBar} from '@/features/videos/components/SearchBar';
 import {SortSelector} from '@/features/videos/components/SortSelector';
 import {VideoGrid} from '@/features/videos/components/VideoGrid';
 
-type VideoWithPlaylist = Video & {playlist?: Pick<Playlist, 'slug' | 'title' | 'id'>};
+type VideoWithPlaylist = Video & {playlist?: Pick<Playlist, 'slug' | 'title' | 'id' | 'coverImage'>};
 
 type VideosLibraryProps = {
   videos: VideoWithPlaylist[];

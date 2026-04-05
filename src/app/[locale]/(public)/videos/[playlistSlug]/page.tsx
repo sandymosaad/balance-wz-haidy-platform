@@ -8,6 +8,7 @@ import {Text} from '@/components/ui/Text';
 import {Button} from '@/components/ui/Button';
 import {Badge} from '@/components/ui/Badge';
 import {Link} from '@/i18n/navigation';
+import {PlaylistCoverMini} from '@/features/videos/components/PlaylistCoverMini';
 import {getPlaylistDetails} from '@/server/actions/playlist.actions';
 
 export const dynamic = 'force-dynamic';
@@ -24,6 +25,8 @@ type PlaylistDetails = {
   title: string;
   description: string | null;
   contentType: string;
+  coverImage?: string | null;
+  cover_image?: string | null;
   videos: PlaylistVideo[];
 };
 
@@ -58,6 +61,7 @@ export default async function PlaylistDetailPage({
   }
 
   const playlist = response.data as unknown as PlaylistDetails;
+  const playlistCoverImage = playlist.coverImage ?? playlist.cover_image ?? null;
 
   return (
     <Section>
@@ -76,13 +80,18 @@ export default async function PlaylistDetailPage({
           <ol className="space-y-3">
             {playlist.videos.map((video, index) => (
               <li key={video.id} className="rounded-xl border border-art-sage bg-art-cream p-4">
-                <div className="flex items-center justify-between gap-4">
-                  <div>
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="min-w-0">
                     <Text variant="small" color="muted">{t('videoNumber', {number: index + 1})}</Text>
                     <Heading level={4} className="mb-1">{video.title}</Heading>
+                    <PlaylistCoverMini
+                      coverImage={playlistCoverImage}
+                      title={t('coverPlaceholderAria', {title: playlist.title})}
+                      alt={t('coverAlt', {title: playlist.title})}
+                    />
                     <Text variant="small">{video.duration ? `${Math.floor(video.duration / 60)}m` : t('durationUnknown')}</Text>
                   </div>
-                  <Button asChild size="sm">
+                  <Button asChild size="sm" className="self-start sm:self-auto">
                     <Link href={`/videos/${playlist.slug}/${video.slug}`}>{t('watch')}</Link>
                   </Button>
                 </div>

@@ -1,6 +1,7 @@
 import type {Prisma} from '@prisma/client';
 import {db} from '@/lib/db';
 import {ServerActionError} from '@/lib/api-response';
+import {normalizePersistedImageUrl} from '@/lib/images';
 import type {
   PlaylistCreateInput,
   PlaylistFilterInput,
@@ -105,7 +106,7 @@ export class PlaylistRepository {
         title: data.title,
         slug,
         description: data.description,
-        coverImage: data.cover_image,
+        coverImage: normalizePersistedImageUrl(data.cover_image),
         contentType: data.content_type,
         order: data.order ?? 0,
         isPublished: data.is_published ?? false
@@ -123,7 +124,7 @@ export class PlaylistRepository {
         title: data.title,
         slug: data.slug ? slugify(data.slug) : undefined,
         description: data.description,
-        coverImage: data.cover_image,
+        coverImage: normalizePersistedImageUrl(data.cover_image),
         contentType: data.content_type,
         order: data.order,
         isPublished: data.is_published

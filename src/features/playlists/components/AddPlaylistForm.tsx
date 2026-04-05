@@ -43,6 +43,7 @@ export function AddPlaylistForm({initialData, submitAction}: AddPlaylistFormProp
   const [isPending, startTransition] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
   const [isError, setIsError] = useState(false);
+  const [isCoverUploading, setIsCoverUploading] = useState(false);
   const [form, setForm] = useState({
     title: initialData?.title ?? '',
     description: initialData?.description ?? '',
@@ -54,6 +55,13 @@ export function AddPlaylistForm({initialData, submitAction}: AddPlaylistFormProp
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (isCoverUploading) {
+      setIsError(true);
+      setMessage('Please wait until the image upload is complete.');
+      return;
+    }
+
     const parsed = schema.safeParse({...form, order: form.order || undefined});
     if (!parsed.success) {
       setIsError(true);
@@ -120,11 +128,30 @@ export function AddPlaylistForm({initialData, submitAction}: AddPlaylistFormProp
 
       <FileUpload
         label="Cover Image"
-        onFileSelected={(_, preview) => setForm((prev) => ({...prev, cover_image: preview ?? ''}))}
+        onUploadStateChange={setIsCoverUploading}
+        onFileSelected={(_, persistedUrl) => {
+          setForm((prev) => ({...prev, cover_image: persistedUrl ?? prev.cover_image}));
+          if (persistedUrl) {
+            setIsError(false);
+            setMessage('Cover image uploaded successfully.');
+          } else {
+            setIsError(true);
+            setMessage('Cover upload failed. You can try again or paste a valid image URL manually.');
+          }
+        }}
+      />
+
+      <Input
+        label="Cover Image URL"
+        value={form.cover_image}
+        placeholder="/images/playlists/example.jpg or https://cdn.example.com/example.jpg"
+        onChange={(event) => setForm((prev) => ({...prev, cover_image: event.target.value}))}
       />
 
       <div className="flex flex-wrap gap-3">
-        <Button type="submit" loading={isPending}>Save Playlist</Button>
+        <Button type="submit" loading={isPending} disabled={isCoverUploading}>
+          {isCoverUploading ? 'Uploading image...' : 'Save Playlist'}
+        </Button>
         <Button type="button" variant="ghost" onClick={() => window.history.back()}>Cancel</Button>
       </div>
     </form>

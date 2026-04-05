@@ -116,7 +116,8 @@ export class VideoRepository {
             select: {
               id: true,
               title: true,
-              slug: true
+              slug: true,
+              coverImage: true
             }
           },
           sources: {
@@ -174,7 +175,8 @@ export class VideoRepository {
           select: {
             id: true,
             title: true,
-            slug: true
+            slug: true,
+            coverImage: true
           }
         },
         sources: {

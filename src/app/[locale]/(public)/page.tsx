@@ -12,6 +12,7 @@ import {Card} from '@/components/ui/Card';
 import {Button} from '@/components/ui/Button';
 import {Link} from '@/i18n/navigation';
 import {getPublishedVideos} from '@/server/actions/video.actions';
+import {getPublishedPlaylists} from '@/server/actions/playlist.actions';
 import {VideoGrid} from '@/features/videos/components/VideoGrid';
 
 export const dynamic = 'force-dynamic';
@@ -40,8 +41,22 @@ export async function generateMetadata({params}: {params: {locale: string}}): Pr
 
 export default async function HomePage({params}: {params: {locale: string}}) {
   const t = await getTranslations({locale: params.locale, namespace: 'phase3.home'});
-  const videosResponse = await getPublishedVideos({limit: 6, page: 1, sort: 'NEWEST'});
+  const [videosResponse, playlistsResponse] = await Promise.all([
+    getPublishedVideos({limit: 6, page: 1, sort: 'NEWEST'}),
+    getPublishedPlaylists({limit: 60, page: 1, sort: 'ALPHABETICAL'})
+  ]);
   const videos = videosResponse.success ? videosResponse.data?.items ?? [] : [];
+  const playlists = playlistsResponse.success ? playlistsResponse.data?.items ?? [] : [];
+  const coverByPlaylistId = new Map(playlists.map((playlist) => [playlist.id, playlist.coverImage]));
+  const videosWithCovers = videos.map((video) => ({
+    ...video,
+    playlist: video.playlist
+      ? {
+          ...video.playlist,
+          coverImage: video.playlist.coverImage ?? coverByPlaylistId.get(video.playlistId) ?? null
+        }
+      : video.playlist
+  }));
   const breadcrumbSchema = generateBreadcrumbSchema([
     {name: 'Home', url: `/${params.locale}`}
   ]);
@@ -102,7 +117,7 @@ export default async function HomePage({params}: {params: {locale: string}}) {
               <Link href="/videos">{t('featuredVideos.cta')}</Link>
             </Button>
           </div>
-          <VideoGrid videos={videos as never[]} />
+          <VideoGrid videos={videosWithCovers as never[]} />
         </Container>
       </Section>
 

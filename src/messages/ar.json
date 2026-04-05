@@ -92,6 +92,8 @@
       "videosCount": "فيديو",
       "videoList": "فيديوهات القائمة",
       "videoNumber": "الفيديو {number}",
+      "coverAlt": "صورة غلاف قائمة التشغيل {title}",
+      "coverPlaceholderAria": "غلاف افتراضي لقائمة التشغيل {title}",
       "durationUnknown": "المدة غير متوفرة",
       "watch": "مشاهدة"
     },

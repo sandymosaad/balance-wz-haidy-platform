@@ -6,6 +6,7 @@ import {Button} from '@/components/ui/Button';
 import {Heading} from '@/components/ui/Heading';
 import {Text} from '@/components/ui/Text';
 import {Link} from '@/i18n/navigation';
+import {normalizeImageSrc} from '@/lib/images';
 
 type PlaylistCardProps = {
   playlist: Playlist;
@@ -14,13 +15,16 @@ type PlaylistCardProps = {
 };
 
 export function PlaylistCard({playlist, videoCount, href}: PlaylistCardProps) {
+  const coverSrc = normalizeImageSrc(playlist.coverImage, '/images/playlist-placeholder.svg');
+
   return (
     <Card hover className="h-full">
       <div className="relative mb-4 aspect-[16/9] overflow-hidden rounded-xl bg-art-sage/25">
         <Image
-          src={playlist.coverImage ?? 'https://placehold.co/800x450/E8DCC8/5A5047?text=Art+Therapy'}
+          src={coverSrc}
           alt={playlist.title}
           fill
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           className="object-cover"
         />
       </div>
