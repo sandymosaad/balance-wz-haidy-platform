@@ -5,6 +5,7 @@ import {isRenderableImageSrc} from '@/lib/images';
 const EN = {
   required: 'This field is required.',
   invalidUrl: 'Please provide a valid URL.',
+  invalidEmail: 'Please provide a valid email address.',
   invalidUuid: 'Please provide a valid identifier.',
   invalidNumber: 'Please provide a valid number.'
 } as const;
@@ -12,6 +13,7 @@ const EN = {
 const AR = {
   required: 'هذا الحقل مطلوب.',
   invalidUrl: 'يرجى إدخال رابط صحيح.',
+  invalidEmail: 'يرجى إدخال بريد إلكتروني صالح.',
   invalidUuid: 'يرجى إدخال معرف صالح.',
   invalidNumber: 'يرجى إدخال رقم صالح.'
 } as const;
@@ -154,6 +156,16 @@ export const VideoFilterSchema = z.object({
   is_published: z.boolean().optional()
 });
 
+export const ContactMessageSchema = z.object({
+  name: z.string().trim().min(2, 'Name must be at least 2 characters.').max(120),
+  email: z.string().trim().email(EN.invalidEmail).max(255),
+  subject: z.string().trim().max(120).optional(),
+  message: z.string().trim().min(10, 'Message must be at least 10 characters.').max(4000),
+  locale: z.string().trim().min(2).max(10),
+  pageUrl: z.string().trim().url(EN.invalidUrl).optional(),
+  website: z.string().trim().max(0).optional()
+});
+
 export type PlaylistCreateInput = z.infer<typeof PlaylistCreateSchema>;
 export type PlaylistUpdateInput = z.infer<typeof PlaylistUpdateSchema>;
 export type PlaylistFilterInput = z.infer<typeof PlaylistFilterSchema>;
@@ -161,6 +173,7 @@ export type VideoCreateInput = z.infer<typeof VideoCreateSchema>;
 export type VideoUpdateInput = z.infer<typeof VideoUpdateSchema>;
 export type VideoFilterInput = z.infer<typeof VideoFilterSchema>;
 export type VideoSourceInput = z.infer<typeof VideoSourceSchema>;
+export type ContactMessageInput = z.infer<typeof ContactMessageSchema>;
 
 export function validateInput<T>(schema: z.ZodType<T>, payload: unknown): T {
   return schema.parse(payload);

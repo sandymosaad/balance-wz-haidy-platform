@@ -79,8 +79,18 @@ export async function Footer({locale}: FooterProps) {
 
           <div className="space-y-3">
             <Heading level={4}>{t('contact')}</Heading>
-            <Text variant="small">hello@arttherapy.studio</Text>
-            <Text variant="small">+966 500 000 000</Text>
+            <Text variant="small">
+              <span className="font-medium text-art-charcoal">{t('contactEmailLabel')}:</span>{' '}
+              <a className="hover:text-art-terracotta" href="mailto:haidy.sm55@gmail.com">
+                haidy.sm55@gmail.com
+              </a>
+            </Text>
+            <Text variant="small">
+              <span className="font-medium text-art-charcoal">{t('contactPhoneLabel')}:</span>{' '}
+              <a className="hover:text-art-terracotta" href="tel:01286073991">
+                01286073991
+              </a>
+            </Text>
             <Link href="/contact" className="text-sm text-art-terracotta hover:text-art-gold">{t('contactForm')}</Link>
           </div>
 

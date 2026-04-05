@@ -20,8 +20,8 @@ export const siteConfig = {
     url: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
   },
   contact: {
-    email: 'hello@arttherapy.studio',
-    phone: '+966 500 000 000'
+    email: 'haidy.sm55@gmail.com',
+    phone: '01286073991'
   },
   social: {
     facebook: SOCIAL_LINKS.facebook,

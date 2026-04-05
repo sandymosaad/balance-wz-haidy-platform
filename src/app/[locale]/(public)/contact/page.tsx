@@ -22,7 +22,7 @@ export default async function ContactPage({params}: {params: {locale: string}}) 
           <Text>{t('subtitle')}</Text>
         </div>
 
-        <ContactForm />
+        <ContactForm locale={params.locale} />
       </Container>
     </Section>
   );
