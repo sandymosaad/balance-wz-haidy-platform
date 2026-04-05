@@ -8,6 +8,7 @@ import {Grid} from '@/components/layout/Grid';
 import {Card} from '@/components/ui/Card';
 import {Button} from '@/components/ui/Button';
 import {Link} from '@/i18n/navigation';
+import {AboutImage} from '@/components/shared/AboutImage';
 
 export const metadata: Metadata = {
   title: 'About Me | Art Therapy Coach',
@@ -16,6 +17,7 @@ export const metadata: Metadata = {
 
 export default async function AboutPage({params}: {params: {locale: string}}) {
   const t = await getTranslations({locale: params.locale, namespace: 'phase3.aboutPage'});
+  const isRtl = params.locale === 'ar';
 
   return (
     <>
@@ -27,9 +29,24 @@ export default async function AboutPage({params}: {params: {locale: string}}) {
       </Section>
 
       <Section background="beige">
-        <Container className="space-y-6">
-          <Heading level={2}>{t('journey.title')}</Heading>
-          <Text>{t('journey.description')}</Text>
+        <Container>
+          <div className="grid gap-8 md:grid-cols-2 md:items-center md:gap-10">
+            <div className={isRtl ? 'md:order-2' : 'md:order-1'}>
+              <AboutImage
+                alt={t('about.photoAlt')}
+                className="mx-auto max-w-lg"
+                sizes="(max-width: 768px) 100vw, 40vw"
+              />
+              <Text variant="small" color="muted" className="mt-3 text-center">
+                {t('about.photoCaption')}
+              </Text>
+            </div>
+
+            <div className={isRtl ? 'md:order-1 md:text-right' : 'md:order-2 md:text-left'}>
+              <Heading level={2}>{t('journey.title')}</Heading>
+              <Text>{t('journey.description')}</Text>
+            </div>
+          </div>
         </Container>
       </Section>
 

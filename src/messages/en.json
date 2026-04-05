@@ -115,6 +115,10 @@
     "aboutPage": {
       "title": "About Me",
       "subtitle": "A journey of healing, creativity, and practical transformation.",
+      "about": {
+        "photoAlt": "Portrait of the Art Therapy coach",
+        "photoCaption": "A personal photo reflecting a warm and grounded coaching approach."
+      },
       "journey": {
         "title": "My Journey",
         "description": "My practice combines evidence-based coaching methods with expressive art therapy to support grounded and meaningful change."
