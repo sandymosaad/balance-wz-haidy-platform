@@ -1,7 +1,9 @@
 {
   "common": {
     "footer": "منصة مصممة للنمو الهادئ والوضوح العاطفي والتحول المستدام.",
-    "bookSession": "احجز جلسة"
+    "bookSession": "احجز جلسة",
+    "previous": "السابق",
+    "next": "التالي"
   },
   "brand": {
     "name": "balance wz haidy",
@@ -93,6 +95,10 @@
       "title": "مكتبة الفيديو",
       "subtitle": "محتوى تعليمي من منصات التواصل الاجتماعي",
       "searchPlaceholder": "ابحث في الفيديوهات حسب العنوان أو الموضوع",
+      "emptyState": "لا توجد فيديوهات متاحة حاليًا.",
+      "pagination": {
+        "pageOf": "الصفحة {current} من {total}"
+      },
       "platforms": {
         "youtube": "يوتيوب",
         "instagram": "إنستغرام",

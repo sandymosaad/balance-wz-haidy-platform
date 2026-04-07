@@ -7,16 +7,34 @@ import {Skeleton} from '@/components/ui/Skeleton';
 import {Alert} from '@/components/ui/Alert';
 import {VideoCard} from '@/features/videos/components/VideoCard';
 
-type VideoWithPlaylist = Video & {playlist?: {slug: string; title?: string; id?: string; coverImage?: string | null} | null};
+type VideoGridItem = Omit<Video, 'playlist'> & {
+  playlist?: {
+    id: string;
+    title: string;
+    slug: string;
+    coverImage: string | null;
+  } | null;
+};
 
 type VideoGridProps = {
-  videos: VideoWithPlaylist[];
+  videos: VideoGridItem[];
   loading?: boolean;
   error?: string | null;
+  errorTitle?: string;
+  emptyTitle?: string;
+  emptyMessage?: string;
   onLoadMore?: () => void;
 };
 
-export function VideoGrid({videos, loading, error, onLoadMore}: VideoGridProps) {
+export function VideoGrid({
+  videos,
+  loading,
+  error,
+  errorTitle = 'Error',
+  emptyTitle = 'No videos',
+  emptyMessage = 'No videos matched your filters.',
+  onLoadMore
+}: VideoGridProps) {
   if (loading) {
     return (
       <Grid cols={4}>
@@ -28,11 +46,11 @@ export function VideoGrid({videos, loading, error, onLoadMore}: VideoGridProps) 
   }
 
   if (error) {
-    return <Alert type="error" title="Error" message={error} />;
+    return <Alert type="error" title={errorTitle} message={error} />;
   }
 
   if (!videos.length) {
-    return <Alert type="info" title="No videos" message="No videos matched your filters." />;
+    return <Alert type="info" title={emptyTitle} message={emptyMessage} />;
   }
 
   return (

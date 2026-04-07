@@ -58,10 +58,12 @@ export interface Video {
 }
 
 export interface PaginationMeta {
-  total: number;
   page: number;
-  limit: number;
-  pageCount: number;
+  pageSize: number;
+  totalItems: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrev: boolean;
 }
 
 export interface PaginatedResult<T> {

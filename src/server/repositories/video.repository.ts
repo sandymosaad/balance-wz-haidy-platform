@@ -87,8 +87,8 @@ function createVideoSourceData(sources: NormalizedSource[]) {
 export class VideoRepository {
   async getAllVideos(filters?: VideoFilterInput) {
     const page = filters?.page ?? 1;
-    const limit = filters?.limit ?? 20;
-    const skip = (page - 1) * limit;
+    const pageSize = filters?.limit ?? 20;
+    const skip = (page - 1) * pageSize;
 
     const where: Prisma.VideoWhereInput = {
       isPublished: filters?.is_published ?? true,
@@ -109,7 +109,7 @@ export class VideoRepository {
       db.video.findMany({
         where,
         skip,
-        take: limit,
+        take: pageSize,
         orderBy: getVideoSort(filters?.sort ?? 'NEWEST'),
         include: {
           playlist: {
@@ -128,13 +128,17 @@ export class VideoRepository {
       db.video.count({where})
     ]);
 
+    const totalPages = Math.max(1, Math.ceil(total / pageSize));
+
     return {
       items,
       pagination: {
-        total,
         page,
-        limit,
-        pageCount: Math.max(1, Math.ceil(total / limit))
+        pageSize,
+        totalItems: total,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrev: page > 1
       }
     };
   }
@@ -316,10 +320,12 @@ export class VideoRepository {
       return {
         items: [],
         pagination: {
-          total: 0,
           page: 1,
-          limit: 20,
-          pageCount: 1
+          pageSize: 20,
+          totalItems: 0,
+          totalPages: 1,
+          hasNext: false,
+          hasPrev: false
         }
       };
     }

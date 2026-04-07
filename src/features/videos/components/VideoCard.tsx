@@ -7,8 +7,17 @@ import {Text} from '@/components/ui/Text';
 import {Link} from '@/i18n/navigation';
 import {isRenderableImageSrc, normalizeImageSrc} from '@/lib/images';
 
+type VideoCardItem = Omit<Video, 'playlist'> & {
+  playlist?: {
+    id: string;
+    title: string;
+    slug: string;
+    coverImage: string | null;
+  } | null;
+};
+
 type VideoCardProps = {
-  video: Video;
+  video: VideoCardItem;
   playlistSlug: string;
 };
 

@@ -20,7 +20,12 @@ export async function getPublishedVideos(
   filters?: VideoFilterInput
 ): Promise<ApiResponse<Awaited<ReturnType<typeof videoRepository.getAllVideos>>>> {
   try {
-    const parsed = filters ? VideoFilterSchema.parse(filters) : undefined;
+    const parsed = VideoFilterSchema.parse({
+      page: 1,
+      limit: 8,
+      sort: 'NEWEST',
+      ...filters
+    });
     const data = await videoRepository.getAllVideos(parsed);
     return successResponse(data);
   } catch (error) {

@@ -1,7 +1,9 @@
 {
   "common": {
     "footer": "Designed for calm growth, emotional clarity, and sustainable transformation.",
-    "bookSession": "Book a Session"
+    "bookSession": "Book a Session",
+    "previous": "Previous",
+    "next": "Next"
   },
   "brand": {
     "name": "balance wz haidy",
@@ -93,6 +95,10 @@
       "title": "Video Library",
       "subtitle": "Educational content from social media platforms",
       "searchPlaceholder": "Search videos by title or topic",
+      "emptyState": "No videos are available right now.",
+      "pagination": {
+        "pageOf": "Page {current} of {total}"
+      },
       "platforms": {
         "youtube": "YouTube",
         "instagram": "Instagram",
