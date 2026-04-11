@@ -3,7 +3,10 @@
     "footer": "Designed for calm growth, emotional clarity, and sustainable transformation.",
     "bookSession": "Book a Session",
     "previous": "Previous",
-    "next": "Next"
+    "next": "Next",
+    "clear": "Clear",
+    "close": "Close",
+    "allPlaylists": "All Playlists"
   },
   "brand": {
     "name": "balance wz haidy",
@@ -12,10 +15,21 @@
   },
   "navigation": {
     "home": "Home",
+    "playlists": "Playlists",
     "about": "About",
     "services": "Services",
     "videos": "Videos",
     "contact": "Contact"
+  },
+  "playlists": {
+    "title": "Playlists",
+    "descriptionLine1": "Explore all published playlists in one place.",
+    "descriptionLine2": "Open any playlist to browse its videos and pick what to watch next.",
+    "videoCount": "{count, plural, one {# video} other {# videos}}",
+    "pageOf": "Page {current} of {total}",
+    "emptyTitle": "No playlists yet",
+    "emptyDescription": "Playlists will appear here once published.",
+    "paginationAria": "Playlists pagination"
   },
   "footer": {
     "brandTitle": "balance wz haidy",
@@ -93,11 +107,63 @@
     },
     "videos": {
       "title": "Video Library",
-      "subtitle": "Educational content from social media platforms",
+      "subtitle": "Browse curated videos by playlist.",
+      "description": "Browse curated videos by playlist. Open any video to choose where to watch it.",
+      "descriptionLine1": "Browse curated videos by playlist.",
+      "descriptionLine2": "Open any video to choose where to watch it.",
       "searchPlaceholder": "Search videos by title or topic",
-      "emptyState": "No videos are available right now.",
+      "resultsCount": "{count, plural, one {# video} other {# videos}}",
+      "errorTitle": "Could not load videos",
+      "breadcrumb": {
+        "videos": "Videos"
+      },
+      "toolbar": {
+        "searchLabel": "Search",
+        "searchPlaceholder": "Search videos by title or topic",
+        "filtersButton": "Filters",
+        "clearAll": "Clear filters",
+        "noFilters": "No filters applied",
+        "resultsSummary": "{count, plural, one {# video} other {# videos}} · Page {current} of {total}",
+        "removeFilter": "Remove {label} filter",
+        "sortLabel": "Sort",
+        "sortPlaceholder": "Choose sort order",
+        "sortOptions": {
+          "newest": "Newest",
+          "oldest": "Oldest",
+          "alphabetical": "Alphabetical (A-Z)",
+          "trending": "Trending"
+        },
+        "platformLabel": "Platform",
+        "allPlatforms": "All platforms",
+        "playlistLabel": "Playlist",
+        "allPlaylists": "All playlists",
+        "tagsLabel": "Tags",
+        "tagsPlaceholder": "Enter tags separated by commas",
+        "tagsHelper": "Use commas to add more than one tag.",
+        "chips": {
+          "search": "Search",
+          "sort": "Sort",
+          "platform": "Platform",
+          "playlist": "Playlist",
+          "tag": "Tag"
+        }
+      },
+      "drawer": {
+        "title": "Filters",
+        "description": "Refine the library without losing your place."
+      },
+      "emptyState": {
+        "title": "No videos yet",
+        "description": "Browse the library to discover warm, practical videos.",
+        "filteredTitle": "No videos match your filters",
+        "filteredDescription": "Try clearing filters or adjusting search terms.",
+        "resetFilters": "Reset filters",
+        "goHome": "Go home"
+      },
       "pagination": {
-        "pageOf": "Page {current} of {total}"
+        "ariaLabel": "Video pagination",
+        "pageOf": "Page {current} of {total}",
+        "goToPage": "Go to page {page}"
       },
       "platforms": {
         "youtube": "YouTube",
@@ -204,12 +270,14 @@
       "validation": {
         "name": "Please enter your name with at least 2 characters.",
         "email": "Please enter a valid email address.",
+        "phone": "Please enter a valid phone number.",
         "subject": "Subject is too long.",
         "message": "Please enter a message with at least 10 characters."
       },
       "form": {
         "name": "Name",
         "email": "Email",
+        "phone": "Phone (optional)",
         "subject": "Subject",
         "message": "Message",
         "submit": "Send Message"

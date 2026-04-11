@@ -159,6 +159,12 @@ export const VideoFilterSchema = z.object({
 export const ContactMessageSchema = z.object({
   name: z.string().trim().min(2, 'Name must be at least 2 characters.').max(120),
   email: z.string().trim().email(EN.invalidEmail).max(255),
+  phone: z
+    .string()
+    .trim()
+    .regex(/^[+()\-\d\s]{7,20}$/, 'Please enter a valid phone number.')
+    .optional()
+    .or(z.literal('')),
   subject: z.string().trim().max(120).optional(),
   message: z.string().trim().min(10, 'Message must be at least 10 characters.').max(4000),
   locale: z.string().trim().min(2).max(10),

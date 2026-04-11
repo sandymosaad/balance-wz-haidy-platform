@@ -3,7 +3,8 @@
 import {headers} from 'next/headers';
 import {Resend} from 'resend';
 import {ContactMessageSchema, type ContactMessageInput} from '@/lib/validation';
-import {errorResponse, mapToApiError, successResponse, type ApiResponse} from '@/lib/api-response';
+import {resolveContactRecipients} from '@/lib/email';
+import {errorResponse, mapToApiError, ServerActionError, successResponse, type ApiResponse} from '@/lib/api-response';
 
 type ContactSuccess = {
   queued: boolean;
@@ -36,14 +37,6 @@ function isRateLimited(ip: string): boolean {
   return false;
 }
 
-function parseContactRecipients(rawValue: string | undefined): string[] {
-  if (!rawValue) return [];
-  return rawValue
-    .split(',')
-    .map((entry) => entry.trim())
-    .filter(Boolean);
-}
-
 function escapeHtml(value: string): string {
   return value
     .replaceAll('&', '&amp;')
@@ -61,6 +54,7 @@ function buildEmailHtml(input: ContactMessageInput, timestampIso: string): strin
       <h2 style="margin-bottom: 12px;">New Contact Message</h2>
       <p><strong>Name:</strong> ${escapeHtml(input.name)}</p>
       <p><strong>Email:</strong> ${escapeHtml(input.email)}</p>
+      <p><strong>Phone:</strong> ${escapeHtml(input.phone?.trim() || 'Not provided')}</p>
       <p><strong>Subject:</strong> ${escapeHtml(subjectText)}</p>
       <p><strong>Locale:</strong> ${escapeHtml(input.locale)}</p>
       <p><strong>Timestamp:</strong> ${escapeHtml(timestampIso)}</p>
@@ -80,6 +74,7 @@ function buildEmailText(input: ContactMessageInput, timestampIso: string): strin
     '',
     `Name: ${input.name}`,
     `Email: ${input.email}`,
+    `Phone: ${input.phone?.trim() || 'Not provided'}`,
     `Subject: ${subjectText}`,
     `Locale: ${input.locale}`,
     `Timestamp: ${timestampIso}`,
@@ -108,7 +103,7 @@ export async function submitContactMessageAction(input: unknown): Promise<ApiRes
 
     const resendApiKey = process.env.RESEND_API_KEY;
     const fromEmail = process.env.CONTACT_FROM_EMAIL;
-    const recipients = parseContactRecipients(process.env.CONTACT_TO_EMAILS);
+    const recipients = resolveContactRecipients(process.env.CONTACT_TO_EMAILS);
 
     if (!resendApiKey || !fromEmail || recipients.length === 0) {
       const missing: string[] = [];
@@ -119,17 +114,16 @@ export async function submitContactMessageAction(input: unknown): Promise<ApiRes
 
       return errorResponse(
         'Contact form email settings are missing.',
-        'CONFIG_ERROR'
-        ,
+        'CONFIG_ERROR',
         {missing}
       );
     }
 
     const resend = new Resend(resendApiKey);
     const timestampIso = new Date().toISOString();
-    const subject = `New Contact Message - ${parsed.name}`;
+    const subject = `New Contact Message — ${parsed.name}`;
 
-    await resend.emails.send({
+    const emailResult = await resend.emails.send({
       from: fromEmail,
       to: recipients,
       replyTo: parsed.email,
@@ -137,6 +131,14 @@ export async function submitContactMessageAction(input: unknown): Promise<ApiRes
       html: buildEmailHtml(parsed, timestampIso),
       text: buildEmailText(parsed, timestampIso)
     });
+
+    if (emailResult.error) {
+      console.error('Resend contact email send failed:', emailResult.error);
+      throw new ServerActionError('Unable to send contact email.', 'EMAIL_SEND_FAILED', {
+        reason: emailResult.error.message ?? 'Resend rejected the message',
+        name: emailResult.error.name ?? 'ResendError'
+      });
+    }
 
     return successResponse({queued: true});
   } catch (error) {

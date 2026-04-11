@@ -12,6 +12,7 @@ type SelectProps = {
   placeholder?: string;
   disabled?: boolean;
   className?: string;
+  isRtl?: boolean;
 };
 
 export function Select({
@@ -21,7 +22,8 @@ export function Select({
   label,
   placeholder = 'Select an option',
   disabled,
-  className
+  className,
+  isRtl = false
 }: SelectProps) {
   return (
     <div className="space-y-2">
@@ -32,7 +34,8 @@ export function Select({
           onChange={(event) => onChange(event.target.value)}
           disabled={disabled}
           className={cn(
-            'w-full appearance-none rounded-2xl border border-art-sage bg-art-beige px-4 py-3 pr-10 text-art-taupe outline-none transition-all duration-calm focus:border-art-terracotta focus:ring-2 focus:ring-art-gold/40 disabled:opacity-60',
+            'w-full appearance-none rounded-2xl border border-art-sage bg-art-beige px-4 py-3 text-art-taupe outline-none transition-all duration-calm focus:border-art-terracotta focus:ring-2 focus:ring-art-gold/40 disabled:opacity-60',
+            isRtl ? 'pl-10 pr-4' : 'pr-10 pl-4',
             className
           )}
           aria-label={label ?? placeholder}
@@ -44,7 +47,7 @@ export function Select({
             </option>
           ))}
         </select>
-        <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-art-clay" />
+        <ChevronDown className={cn('pointer-events-none absolute top-1/2 h-4 w-4 -translate-y-1/2 text-art-clay', isRtl ? 'left-3' : 'right-3')} />
       </div>
     </div>
   );

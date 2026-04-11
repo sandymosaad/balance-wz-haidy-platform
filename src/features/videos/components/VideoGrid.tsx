@@ -37,9 +37,9 @@ export function VideoGrid({
 }: VideoGridProps) {
   if (loading) {
     return (
-      <Grid cols={4}>
+      <Grid cols={4} className="sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
         {Array.from({length: 8}).map((_, index) => (
-          <Skeleton key={index} height="240px" className="rounded-gentle" />
+          <Skeleton key={index} height="22rem" className="rounded-[1.5rem] border border-art-sage/40 bg-art-beige/80" />
         ))}
       </Grid>
     );
@@ -55,7 +55,7 @@ export function VideoGrid({
 
   return (
     <div className="space-y-8">
-      <Grid cols={4}>
+      <Grid cols={4} className="sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
         {videos.map((video) => (
           <VideoCard key={video.id} video={video} playlistSlug={video.playlist?.slug ?? 'videos'} />
         ))}

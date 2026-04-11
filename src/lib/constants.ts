@@ -2,6 +2,7 @@ export const APP_NAME = 'balance wz haidy';
 
 export const NAV_ROUTES = [
   {key: 'home', href: '/'},
+  {key: 'playlists', href: '/playlists'},
   {key: 'videos', href: '/videos'},
   {key: 'about', href: '/about'},
   {key: 'services', href: '/services'},

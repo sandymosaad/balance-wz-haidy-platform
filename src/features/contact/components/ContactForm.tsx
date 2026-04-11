@@ -14,7 +14,7 @@ type ContactFormProps = {
   locale: string;
 };
 
-type ContactFieldError = Partial<Record<'name' | 'email' | 'subject' | 'message', string>>;
+type ContactFieldError = Partial<Record<'name' | 'email' | 'phone' | 'subject' | 'message', string>>;
 
 export function ContactForm({locale}: ContactFormProps) {
   const t = useTranslations('phase3.contactPage');
@@ -22,12 +22,12 @@ export function ContactForm({locale}: ContactFormProps) {
   const [loading, setLoading] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<ContactFieldError>({});
   const [submitError, setSubmitError] = useState('');
-  const [form, setForm] = useState({name: '', email: '', subject: '', message: '', website: ''});
+  const [form, setForm] = useState({name: '', email: '', phone: '', subject: '', message: '', website: ''});
 
   function updateField(key: keyof typeof form, value: string) {
     setForm((previous) => ({...previous, [key]: value}));
 
-    if (key === 'name' || key === 'email' || key === 'subject' || key === 'message') {
+    if (key === 'name' || key === 'email' || key === 'phone' || key === 'subject' || key === 'message') {
       setFieldErrors((previous) => ({...previous, [key]: undefined}));
     }
 
@@ -88,6 +88,10 @@ export function ContactForm({locale}: ContactFormProps) {
           nextErrors.message = t('validation.message');
         }
 
+        if (schemaFieldErrors.phone?.length) {
+          nextErrors.phone = t('validation.phone');
+        }
+
         if (schemaFieldErrors.subject?.length) {
           nextErrors.subject = t('validation.subject');
         }
@@ -102,9 +106,16 @@ export function ContactForm({locale}: ContactFormProps) {
 
       if (!response.success) {
         const missingConfig = response.error?.details?.missing;
+        const providerReason = typeof response.error?.details?.reason === 'string'
+          ? response.error.details.reason
+          : undefined;
 
         if (response.error?.code === 'CONFIG_ERROR' && Array.isArray(missingConfig) && missingConfig.length > 0) {
           setSubmitError(`${t('errors.configMissing')}: ${missingConfig.join(', ')}`);
+        } else if (providerReason) {
+          setSubmitError(providerReason);
+        } else if (response.error?.message) {
+          setSubmitError(response.error.message);
         } else {
           setSubmitError(mapServerError(response.error?.code));
         }
@@ -115,7 +126,7 @@ export function ContactForm({locale}: ContactFormProps) {
       setStatus('success');
       setSubmitError('');
       setFieldErrors({});
-      setForm({name: '', email: '', subject: '', message: '', website: ''});
+      setForm({name: '', email: '', phone: '', subject: '', message: '', website: ''});
     } catch {
       setSubmitError(t('errors.sendFailed'));
       setStatus('error');
@@ -158,6 +169,15 @@ export function ContactForm({locale}: ContactFormProps) {
           helperText={fieldErrors.email}
           disabled={loading}
           required
+        />
+        <Input
+          label={t('form.phone')}
+          type="tel"
+          value={form.phone}
+          onChange={(event) => updateField('phone', event.target.value)}
+          error={fieldErrors.phone}
+          helperText={fieldErrors.phone}
+          disabled={loading}
         />
         <Select
           label={t('form.subject')}

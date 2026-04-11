@@ -3,7 +3,10 @@
     "footer": "منصة مصممة للنمو الهادئ والوضوح العاطفي والتحول المستدام.",
     "bookSession": "احجز جلسة",
     "previous": "السابق",
-    "next": "التالي"
+    "next": "التالي",
+    "clear": "مسح",
+    "close": "إغلاق",
+    "allPlaylists": "كل القوائم"
   },
   "brand": {
     "name": "balance wz haidy",
@@ -12,10 +15,21 @@
   },
   "navigation": {
     "home": "الرئيسية",
+    "playlists": "القوائم",
     "about": "من نحن",
     "services": "الخدمات",
     "videos": "الفيديوهات",
     "contact": "تواصل"
+  },
+  "playlists": {
+    "title": "القوائم",
+    "descriptionLine1": "استكشف جميع القوائم المنشورة في مكان واحد.",
+    "descriptionLine2": "افتح أي قائمة لتصفح فيديوهاتها واختيار ما تود مشاهدته.",
+    "videoCount": "{count, plural, one {# فيديو} other {# فيديوهات}}",
+    "pageOf": "الصفحة {current} من {total}",
+    "emptyTitle": "لا توجد قوائم بعد",
+    "emptyDescription": "ستظهر القوائم هنا بمجرد نشرها.",
+    "paginationAria": "ترقيم صفحات القوائم"
   },
   "footer": {
     "brandTitle": "balance wz haidy",
@@ -93,11 +107,63 @@
     },
     "videos": {
       "title": "مكتبة الفيديو",
-      "subtitle": "محتوى تعليمي من منصات التواصل الاجتماعي",
+      "subtitle": "تصفّح مقاطع فيديو مختارة حسب القوائم.",
+      "description": "تصفّح مقاطع فيديو مختارة حسب القوائم. افتح أي فيديو ثم اختر المنصّة التي تفضل المشاهدة عليها.",
+      "descriptionLine1": "تصفّح مقاطع فيديو مختارة حسب القوائم.",
+      "descriptionLine2": "افتح أي فيديو ثم اختر المنصّة التي تفضل المشاهدة عليها.",
       "searchPlaceholder": "ابحث في الفيديوهات حسب العنوان أو الموضوع",
-      "emptyState": "لا توجد فيديوهات متاحة حاليًا.",
+      "resultsCount": "{count, plural, one {# فيديو} other {# فيديوهات}}",
+      "errorTitle": "تعذر تحميل الفيديوهات",
+      "breadcrumb": {
+        "videos": "الفيديوهات"
+      },
+      "toolbar": {
+        "searchLabel": "بحث",
+        "searchPlaceholder": "ابحث في الفيديوهات حسب العنوان أو الموضوع",
+        "filtersButton": "المرشحات",
+        "clearAll": "مسح المرشحات",
+        "noFilters": "لا توجد مرشحات مفعلة",
+        "resultsSummary": "{count, plural, one {# فيديو} other {# فيديوهات}} · الصفحة {current} من {total}",
+        "removeFilter": "إزالة مرشح {label}",
+        "sortLabel": "الترتيب",
+        "sortPlaceholder": "اختر طريقة الترتيب",
+        "sortOptions": {
+          "newest": "الأحدث",
+          "oldest": "الأقدم",
+          "alphabetical": "أبجديًا (A-Z)",
+          "trending": "الأكثر رواجًا"
+        },
+        "platformLabel": "المنصة",
+        "allPlatforms": "كل المنصات",
+        "playlistLabel": "قائمة التشغيل",
+        "allPlaylists": "كل القوائم",
+        "tagsLabel": "الوسوم",
+        "tagsPlaceholder": "أدخل الوسوم مفصولة بفواصل",
+        "tagsHelper": "استخدم الفواصل لإضافة أكثر من وسم.",
+        "chips": {
+          "search": "البحث",
+          "sort": "الترتيب",
+          "platform": "المنصة",
+          "playlist": "قائمة التشغيل",
+          "tag": "وسم"
+        }
+      },
+      "drawer": {
+        "title": "المرشحات",
+        "description": "نقّح المكتبة دون أن تفقد موقعك."
+      },
+      "emptyState": {
+        "title": "لا توجد فيديوهات بعد",
+        "description": "تصفح المكتبة لاكتشاف فيديوهات دافئة وعملية.",
+        "filteredTitle": "لا توجد فيديوهات تطابق المرشحات",
+        "filteredDescription": "حاول مسح المرشحات أو تعديل كلمات البحث.",
+        "resetFilters": "إعادة ضبط المرشحات",
+        "goHome": "العودة إلى الرئيسية"
+      },
       "pagination": {
-        "pageOf": "الصفحة {current} من {total}"
+        "ariaLabel": "ترقيم صفحات الفيديو",
+        "pageOf": "الصفحة {current} من {total}",
+        "goToPage": "الانتقال إلى الصفحة {page}"
       },
       "platforms": {
         "youtube": "يوتيوب",
@@ -204,12 +270,14 @@
       "validation": {
         "name": "يرجى إدخال الاسم بحد أدنى حرفين.",
         "email": "يرجى إدخال بريد إلكتروني صالح.",
+        "phone": "يرجى إدخال رقم هاتف صالح.",
         "subject": "الموضوع طويل جدًا.",
         "message": "يرجى إدخال رسالة لا تقل عن 10 أحرف."
       },
       "form": {
         "name": "الاسم",
         "email": "البريد الإلكتروني",
+        "phone": "رقم الهاتف (اختياري)",
         "subject": "الموضوع",
         "message": "الرسالة",
         "submit": "إرسال"
