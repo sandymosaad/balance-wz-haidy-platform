@@ -6,7 +6,7 @@
     "dev": "next dev",
     "prebuild": "prisma generate",
     "build": "next build",
-    "vercel-build": "prisma migrate deploy && npm run build",
+    "vercel-build": "npm run build",
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
