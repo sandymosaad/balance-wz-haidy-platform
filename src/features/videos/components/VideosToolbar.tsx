@@ -15,8 +15,7 @@ import {
   buildVideoQuery,
   hasActiveVideoFilters,
   parseVideoQueryState,
-  type VideosSearchParams,
-  type VideoLibraryQueryState
+  type VideosSearchParams
 } from '@/features/videos/lib/query';
 import {VideosFiltersDrawer} from '@/features/videos/components/VideosFiltersDrawer';
 

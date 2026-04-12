@@ -1,11 +1,12 @@
 import type {Metadata} from 'next';
 import {SOCIAL_LINKS} from '@/lib/social-links';
+import {getSiteUrl} from '@/lib/site-url';
 
 export const siteConfig = {
   name: 'balance wz haidy',
   description: 'Transform your life through creative expression and personal growth with art therapy coaching.',
-  url: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
-  ogImage: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/og-image.jpg`,
+  url: getSiteUrl(),
+  ogImage: `${getSiteUrl()}/og-image.jpg`,
   keywords: [
     'art therapy',
     'life coaching',
@@ -17,7 +18,7 @@ export const siteConfig = {
   ],
   authors: {
     name: 'balance wz haidy',
-    url: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+    url: getSiteUrl()
   },
   contact: {
     email: 'haidy.sm55@gmail.com',

@@ -76,16 +76,18 @@ export default async function HomePage({params}: {params: {locale: string}}) {
 
       <Section background="cream">
         <Container>
-          <Grid cols={2} gap="lg" className="items-center">
+          <div className="mx-auto flex max-w-[720px] flex-col items-center text-center">
             <div className="rounded-gentle bg-art-beige/70 p-10" />
-            <div>
-              <Heading level={2}>{t('aboutPreview.title')}</Heading>
-              <Text>{t('aboutPreview.description')}</Text>
+            <div className="mt-8 max-w-[680px]">
+              <Heading level={2} alignment="center">
+                {t('aboutPreview.title')}
+              </Heading>
+              <Text className="mx-auto max-w-[640px] text-center">{t('aboutPreview.description')}</Text>
               <Button asChild variant="outline" className="mt-6">
                 <Link href="/about">{t('aboutPreview.cta')}</Link>
               </Button>
             </div>
-          </Grid>
+          </div>
         </Container>
       </Section>
 

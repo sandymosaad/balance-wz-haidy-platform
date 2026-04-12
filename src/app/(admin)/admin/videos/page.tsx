@@ -8,7 +8,6 @@ import {DataTable} from '@/components/admin/DataTable';
 import {StatusBadge} from '@/components/admin/StatusBadge';
 import {formatDate} from '@/lib/admin-utils';
 import {PlatformIcon} from '@/features/videos/components/PlatformIcon';
-import type {Video} from '@/types';
 import type {VideoPlatform} from '@prisma/client';
 
 interface VideoRow extends Record<string, unknown> {
